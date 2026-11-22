@@ -3,12 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notificador de Mejoras CoC | #Q8Y9PQRP8</title>
+    <title>Notificador de Mejoras CoC</title>
+
+    <!-- Cabeceras PWA integradas para instalación directa en móvil -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CoC Timer">
+
+    <!-- Registro seguro del Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+    </script>
+
+    <!-- Tailwind CSS & Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lilita+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -20,295 +40,379 @@
                     },
                     colors: {
                         coc: {
-                            bg: '#0f1219',
-                            card: '#181e2c',
-                            cardHover: '#1f273a',
+                            bg: '#0b0f17',
+                            card: '#131926',
+                            cardHover: '#192233',
                             gold: '#f5b027',
                             goldDark: '#b87a08',
                             elixir: '#e040fb',
-                            darkElixir: '#7c4dff',
                             builder: '#38bdf8',
-                            green: '#4ade80',
-                            border: '#2c364f'
+                            green: '#10b981',
+                            border: '#243047'
                         }
                     },
                     boxShadow: {
-                        'coc-gold': '0 4px 0 #9a6300, 0 8px 16px rgba(0,0,0,0.5)',
-                        'coc-blue': '0 4px 0 #0284c7, 0 8px 16px rgba(0,0,0,0.4)',
-                        'coc-purple': '0 4px 0 #86198f, 0 8px 16px rgba(0,0,0,0.4)',
-                        'coc-green': '0 4px 0 #15803d, 0 8px 16px rgba(0,0,0,0.4)',
+                        'coc-gold': '0 4px 0 #9a6300, 0 8px 16px rgba(0,0,0,0.45)',
+                        'coc-green': '0 4px 0 #047857, 0 8px 16px rgba(0,0,0,0.4)',
+                        'coc-slate': '0 3px 0 #090d14, 0 6px 12px rgba(0,0,0,0.35)',
                     }
                 }
             }
         }
     </script>
+
     <style>
         body {
-            background-color: #0f1219;
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(245, 176, 39, 0.06) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(224, 64, 251, 0.06) 0%, transparent 40%);
+            background-color: #0b0f17;
+            background-image:
+                radial-gradient(circle at 10% 10%, rgba(245, 176, 39, 0.07) 0%, transparent 42%),
+                radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.06) 0%, transparent 42%);
             color: #f1f5f9;
         }
         .clash-title {
             font-family: 'Lilita One', cursive, sans-serif;
             letter-spacing: 0.03em;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.75);
         }
         .btn-coc {
-            transition: all 0.12s ease;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
         }
         .btn-coc:active {
             transform: translateY(3px);
             box-shadow: none !important;
         }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* Barra de desplazamiento horizontal limpia para pestañas en móvil */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        ::-webkit-scrollbar-track {
-            background: #0f1219;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #2c364f;
-            border-radius: 9999px;
+        @keyframes pulse-emerald {
+            0%, 100% { border-color: rgba(16, 185, 129, 0.95); box-shadow: 0 0 18px rgba(16, 185, 129, 0.28); }
+            50% { border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 0 6px rgba(16, 185, 129, 0.1); }
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #f5b027;
+        @keyframes pulse-amber {
+            0%, 100% { border-color: rgba(245, 176, 39, 0.9); box-shadow: 0 0 15px rgba(245, 176, 39, 0.25); }
+            50% { border-color: rgba(245, 176, 39, 0.35); box-shadow: 0 0 5px rgba(245, 176, 39, 0.08); }
         }
-        @keyframes pulse-border {
-            0%, 100% { border-color: rgba(74, 222, 128, 0.9); box-shadow: 0 0 15px rgba(74, 222, 128, 0.3); }
-            50% { border-color: rgba(74, 222, 128, 0.3); box-shadow: 0 0 5px rgba(74, 222, 128, 0.1); }
+        .glow-completed {
+            animation: pulse-emerald 2s infinite;
         }
-        .completed-glow {
-            animation: pulse-border 2s infinite;
+        .glow-prealert {
+            animation: pulse-amber 2.2s infinite;
         }
     </style>
-    <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-  }
-</script>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-coc-gold selection:text-black">
+<body class="min-h-screen flex flex-col antialiased selection:bg-coc-gold selection:text-slate-950">
 
-    <!-- Toast / In-App Notification Banner -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+    <!-- Contenedor de Notificaciones Flotantes (Toasts) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
-    <!-- Header -->
-    <header class="sticky top-0 z-30 bg-coc-card/90 backdrop-blur-md border-b border-coc-border shadow-lg">
-        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-inner border-2 border-amber-200 text-slate-950 text-xl sm:text-2xl">
-                    <i class="fa-solid fa-hammer"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <h1 class="clash-title text-xl sm:text-2xl text-coc-gold tracking-wide">Notificador CoC</h1>
-                        <span id="player-tag-badge" class="px-2.5 py-0.5 rounded-lg bg-slate-800 border border-coc-gold/40 text-coc-gold font-mono text-xs sm:text-sm font-bold">
-                            #Q8Y9PQRP8
-                        </span>
+    <!-- Encabezado Principal -->
+    <header class="sticky top-0 z-30 bg-coc-card/95 backdrop-blur-md border-b border-coc-border shadow-xl">
+        <div class="max-w-6xl mx-auto px-3 sm:px-5 pt-3 pb-2.5 space-y-2.5">
+            <!-- Fila Superior: Logo + Acciones Globales -->
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center border-2 border-amber-200 text-slate-950 text-lg sm:text-xl shadow-md shrink-0">
+                        <i class="fa-solid fa-hammer"></i>
                     </div>
-                    <p id="export-date-label" class="text-xs text-slate-400 mt-0.5">
-                        Cargando datos de exportación...
-                    </p>
+                    <div>
+                        <h1 class="clash-title text-lg sm:text-2xl text-coc-gold leading-tight">Notificador de Mejoras CoC</h1>
+                        <p class="text-[11px] sm:text-xs text-slate-400">Multi-Aldea • Pase de Oro • Alertas Anticipadas</p>
+                    </div>
+                </div>
+
+                <!-- Botones de Alerta y JSON -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button id="btn-notify-perm" onclick="requestNotificationPermission()" class="btn-coc px-3 py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 font-extrabold text-xs shadow-coc-green flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-bell"></i>
+                        <span id="notify-btn-text">Activar Alertas</span>
+                    </button>
+
+                    <button onclick="testNotification()" title="Probar sonido y notificación push" class="btn-coc px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-coc-border text-slate-200 font-semibold text-xs shadow-coc-slate flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-volume-high text-coc-gold"></i>
+                        <span class="hidden sm:inline">Probar Alerta</span>
+                    </button>
+
+                    <button onclick="openJsonModal()" class="btn-coc px-3 py-2 rounded-xl bg-gradient-to-b from-amber-400 to-amber-600 text-slate-950 font-extrabold text-xs shadow-coc-gold flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-file-code"></i>
+                        <span>Actualizar JSON</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <button id="btn-notify-perm" onclick="requestNotificationPermission()" class="btn-coc px-3 py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 font-bold text-xs sm:text-sm shadow-coc-green flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-bell"></i>
-                    <span id="notify-btn-text">Activar Alertas</span>
-                </button>
+            <!-- Barra Horizontal Desplazable de Pestañas de Aldeas -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1 pb-0.5 border-t border-coc-border/60">
+                <div id="village-tabs-list" class="flex items-center gap-2">
+                    <!-- Pestañas inyectadas dinámicamente -->
+                </div>
 
-                <button onclick="testNotification()" title="Probar sonido y notificación" class="btn-coc px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-coc-border text-slate-200 font-semibold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-volume-high text-coc-gold"></i>
-                    <span class="hidden sm:inline">Probar Alerta</span>
-                </button>
-
-                <button onclick="toggleJsonModal(true)" class="btn-coc px-3.5 py-2 rounded-xl bg-gradient-to-b from-amber-400 to-amber-600 text-slate-950 font-bold text-xs sm:text-sm shadow-coc-gold flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-file-code"></i>
-                    <span>Actualizar JSON</span>
+                <button onclick="openNewVillageModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-coc-gold/60 bg-coc-gold/10 hover:bg-coc-gold/20 text-coc-gold font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Nueva Aldea</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 space-y-6">
+    <!-- Contenido Principal -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-5 py-5 space-y-5">
 
-        <!-- Time Mode & Potion Simulator Bar -->
-        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-md">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div class="flex items-center gap-2 text-sm font-semibold text-slate-300">
-                    <i class="fa-solid fa-clock text-coc-gold"></i>
-                    <span>Cálculo de Tiempo:</span>
+        <!-- Cabecera de Aldea Activa + Acciones de Pestaña -->
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-slate-800 border border-coc-gold/40 flex items-center justify-center text-coc-gold shrink-0">
+                    <i class="fa-solid fa-fort-awesome text-lg"></i>
                 </div>
-                <div class="inline-flex rounded-xl bg-slate-900 p-1 border border-coc-border w-fit">
-                    <button id="mode-live" onclick="setTimeMode('live')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-coc-gold text-slate-950 shadow">
-                        En Vivo (Desde Exportación)
-                    </button>
-                    <button id="mode-raw" onclick="setTimeMode('raw')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
-                        Tiempo Crudo JSON
-                    </button>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 id="active-village-title" class="font-extrabold text-base sm:text-lg text-white truncate">Aldea Principal</h2>
+                        <span id="active-village-tag" class="px-2 py-0.5 rounded-md bg-slate-900 border border-coc-gold/40 text-coc-gold font-mono text-xs font-bold">#Q8Y9PQRP8</span>
+                        <button onclick="openRenameVillageModal()" title="Renombrar aldea" class="text-slate-400 hover:text-coc-gold text-xs p-1 transition cursor-pointer">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    </div>
+                    <p id="active-village-subtitle" class="text-xs text-slate-400 mt-0.5">Sincronizada en tiempo real</p>
                 </div>
             </div>
 
-            <!-- Potion Simulators & Custom Timer -->
             <div class="flex items-center gap-2 flex-wrap">
-                <button id="btn-builder-potion" onclick="togglePotion('builder')" class="px-3 py-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
-                    <i class="fa-solid fa-flask"></i>
-                    <span>Poción Constructor (-9h)</span>
+                <button onclick="openAddTimerModal()" class="btn-coc px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/50 text-emerald-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Añadir Mejora Manual</span>
                 </button>
-                <button id="btn-lab-potion" onclick="togglePotion('lab')" class="px-3 py-1.5 rounded-xl border border-fuchsia-500/40 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
-                    <i class="fa-solid fa-vial"></i>
-                    <span>Poción Investigación (-23h)</span>
-                </button>
-                <button onclick="toggleCustomTimerModal(true)" class="px-3 py-1.5 rounded-xl border border-coc-border bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
-                    <i class="fa-solid fa-plus text-coc-gold"></i>
-                    <span>Temporizador Manual</span>
+                <button id="btn-delete-village" onclick="openDeleteVillageModal()" class="hidden px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Eliminar Aldea</span>
                 </button>
             </div>
         </section>
 
-        <!-- KPI Summary Cards -->
-        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <!-- Next Upgrade Finishing -->
-            <div class="bg-coc-card border border-coc-gold/40 rounded-2xl p-4 relative overflow-hidden">
-                <div class="absolute -right-3 -bottom-3 text-coc-gold/10 text-6xl pointer-events-none">
-                    <i class="fa-solid fa-hourglass-half"></i>
+        <!-- Panel 1: Pase de Oro (Descuentos de Constructor e Investigación) -->
+        <section class="bg-coc-card border border-coc-gold/40 rounded-2xl p-4 sm:p-5 shadow-md space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-coc-gold shrink-0">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <h3 class="clash-title text-base sm:text-lg text-coc-gold">Pase de Oro (Descuentos de Tiempo)</h3>
+                        <p class="text-xs text-slate-300">
+                            El JSON de CoC no incluye el nivel del Pase (sus tiempos ya vienen descontados). Selecciona tu % aquí para calcular nuevas mejoras o ajustar las actuales.
+                        </p>
+                    </div>
                 </div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Próxima en Terminar</p>
-                <p id="kpi-next-timer" class="clash-title text-xl sm:text-2xl text-coc-gold mt-1">--:--:--</p>
-                <p id="kpi-next-name" class="text-xs text-slate-300 truncate mt-1">Calculando...</p>
             </div>
 
-            <!-- Home Village Builders -->
-            <div class="bg-coc-card border border-coc-border rounded-2xl p-4 relative overflow-hidden">
-                <div class="absolute -right-3 -bottom-3 text-amber-500/10 text-6xl pointer-events-none">
-                    <i class="fa-solid fa-hammer"></i>
+            <!-- Selectores de Potencia -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                <!-- Potencia de Constructor -->
+                <div class="bg-slate-900/80 border border-coc-border rounded-xl p-3.5 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-hammer"></i>
+                            <span>Potencia de Constructor</span>
+                        </span>
+                        <span class="text-[11px] text-slate-400">Aldea y Base Constructor</span>
+                    </div>
+                    <div id="builder-boost-pills" class="grid grid-cols-4 gap-2">
+                        <!-- Pills 0%, 10%, 15%, 20% -->
+                    </div>
                 </div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Constructores Aldea</p>
-                <p id="kpi-builders" class="clash-title text-xl sm:text-2xl text-white mt-1">0 Activos</p>
-                <p class="text-xs text-amber-400 mt-1">Aldea Principal (TH17)</p>
+
+                <!-- Potencia de Investigación -->
+                <div class="bg-slate-900/80 border border-coc-border rounded-xl p-3.5 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-fuchsia-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-flask"></i>
+                            <span>Potencia de Investigación</span>
+                        </span>
+                        <span class="text-[11px] text-slate-400">Laboratorio y Mascotas</span>
+                    </div>
+                    <div id="research-boost-pills" class="grid grid-cols-4 gap-2">
+                        <!-- Pills 0%, 10%, 15%, 20% -->
+                    </div>
+                </div>
             </div>
 
-            <!-- Laboratory -->
-            <div class="bg-coc-card border border-coc-border rounded-2xl p-4 relative overflow-hidden">
-                <div class="absolute -right-3 -bottom-3 text-fuchsia-500/10 text-6xl pointer-events-none">
-                    <i class="fa-solid fa-flask-vial"></i>
-                </div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Laboratorio</p>
-                <p id="kpi-lab" class="clash-title text-xl sm:text-2xl text-fuchsia-400 mt-1">Inactivo</p>
-                <p id="kpi-lab-sub" class="text-xs text-slate-400 truncate mt-1">Sin investigación</p>
-            </div>
+            <!-- Toggle y Acción para Recalcular Timers Activos -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-coc-border/60">
+                <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+                    <input id="toggle-auto-recalc" type="checkbox" onchange="toggleAutoRecalcBoost(this.checked)" class="w-4 h-4 rounded accent-amber-400 cursor-pointer">
+                    <span class="text-xs font-medium text-slate-200">
+                        Recalcular timers activos automáticamente al cambiar de %
+                    </span>
+                </label>
 
-            <!-- Builder Base -->
-            <div class="bg-coc-card border border-coc-border rounded-2xl p-4 relative overflow-hidden">
-                <div class="absolute -right-3 -bottom-3 text-sky-500/10 text-6xl pointer-events-none">
-                    <i class="fa-solid fa-wrench"></i>
-                </div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Base del Constructor</p>
-                <p id="kpi-bb" class="clash-title text-xl sm:text-2xl text-sky-400 mt-1">0 Activos</p>
-                <p id="kpi-bb-sub" class="text-xs text-slate-400 truncate mt-1">Maestro Constructor</p>
+                <button onclick="recalculateAllActiveTimersNow()" class="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 font-bold text-xs flex items-center gap-1.5 w-fit transition cursor-pointer">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span>Recalcular timers activos con este %</span>
+                </button>
             </div>
         </section>
 
-        <!-- Category Filter Tabs -->
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-2 overflow-x-auto pb-1 w-full sm:w-auto">
-                <button onclick="setFilter('all')" data-filter="all" class="filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap">
+        <!-- Panel 2: Configuración de Anticipación de Notificación (Minutos) -->
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 sm:p-5 shadow-md space-y-3.5">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 shrink-0">
+                        <i class="fa-solid fa-bell-concierge"></i>
+                    </div>
+                    <div>
+                        <h3 class="clash-title text-base sm:text-lg text-white">Anticipación de Notificación</h3>
+                        <p class="text-xs text-slate-400">Elige cuántos minutos antes de finalizar deseas recibir el aviso</p>
+                    </div>
+                </div>
+
+                <!-- Toggle avisar también al llegar a 00:00:00 -->
+                <label class="inline-flex items-center gap-2 bg-slate-900/90 border border-coc-border px-3 py-2 rounded-xl cursor-pointer select-none w-fit">
+                    <input id="toggle-notify-zero" type="checkbox" onchange="toggleNotifyAtZero(this.checked)" class="w-4 h-4 rounded accent-emerald-400 cursor-pointer">
+                    <span class="text-xs font-semibold text-slate-200">Avisar también al llegar a 00:00:00</span>
+                </label>
+            </div>
+
+            <!-- Chips de minutos rápidos + Input personalizado -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                <div class="flex items-center gap-1.5 flex-wrap" id="lead-time-chips">
+                    <!-- Chips inyectados por JS -->
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-900 border border-coc-border rounded-xl px-3 py-1.5 w-fit">
+                    <label for="custom-lead-minutes" class="text-xs font-semibold text-slate-300 whitespace-nowrap">Minutos exactos:</label>
+                    <input id="custom-lead-minutes" type="number" min="0" max="1440" oninput="setLeadMinutes(this.value)" class="w-16 bg-slate-950 border border-coc-border focus:border-coc-gold rounded-lg px-2 py-1 text-xs font-bold text-coc-gold text-center focus:outline-none">
+                    <span class="text-xs text-slate-400">min</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Barra de Pociones Rápidas y Resumen KPI -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+            <!-- KPIs Compactos (8 cols) -->
+            <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="bg-coc-card border border-coc-gold/40 rounded-2xl p-3.5">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Próxima en Terminar</p>
+                    <p id="kpi-next-timer" class="clash-title text-lg sm:text-xl text-coc-gold mt-0.5">--:--:--</p>
+                    <p id="kpi-next-name" class="text-xs text-slate-300 truncate mt-0.5">Sin mejoras</p>
+                </div>
+
+                <div class="bg-coc-card border border-coc-border rounded-2xl p-3.5">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Constructores</p>
+                    <p id="kpi-builders" class="clash-title text-lg sm:text-xl text-white mt-0.5">0 Activos</p>
+                    <p id="kpi-builders-sub" class="text-xs text-amber-400 truncate mt-0.5">Aldea y Base</p>
+                </div>
+
+                <div class="col-span-2 sm:col-span-1 bg-coc-card border border-coc-border rounded-2xl p-3.5">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Investigación / Lab</p>
+                    <p id="kpi-research" class="clash-title text-lg sm:text-xl text-fuchsia-400 mt-0.5">Libre</p>
+                    <p id="kpi-research-sub" class="text-xs text-slate-400 truncate mt-0.5">Sin investigación</p>
+                </div>
+            </div>
+
+            <!-- Pociones Rápidas (4 cols) -->
+            <div class="lg:col-span-4 bg-coc-card border border-coc-border rounded-2xl p-3.5 flex flex-col justify-between gap-2">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-wand-magic-sparkles text-coc-gold"></i>
+                    <span>Aplicar Poción Instantánea</span>
+                </p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="applyPotionDiscount('builder', 9)" class="btn-coc px-2.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/40 text-sky-300 text-xs font-bold flex flex-col items-center justify-center text-center cursor-pointer">
+                        <span><i class="fa-solid fa-flask mr-1"></i>Constructor</span>
+                        <span class="text-[10px] text-sky-200/80">-9 horas reales</span>
+                    </button>
+                    <button onclick="applyPotionDiscount('research', 23)" class="btn-coc px-2.5 py-2 rounded-xl bg-fuchsia-500/15 hover:bg-fuchsia-500/25 border border-fuchsia-400/40 text-fuchsia-300 text-xs font-bold flex flex-col items-center justify-center text-center cursor-pointer">
+                        <span><i class="fa-solid fa-vial mr-1"></i>Investigación</span>
+                        <span class="text-[10px] text-fuchsia-200/80">-23 horas reales</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filtros por Categoría -->
+        <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 w-full sm:w-auto">
+                <button onclick="setCategoryFilter('all')" data-cat="all" class="cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap">
                     Todas (<span id="count-all">0</span>)
                 </button>
-                <button onclick="setFilter('home')" data-filter="home" class="filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-card text-slate-300 border border-coc-border hover:border-amber-400/50 transition cursor-pointer whitespace-nowrap">
-                    <i class="fa-solid fa-fort-awesome text-amber-400 mr-1"></i> Aldea Principal (<span id="count-home">0</span>)
+                <button onclick="setCategoryFilter('builder')" data-cat="builder" class="cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-card text-slate-300 border border-coc-border transition cursor-pointer whitespace-nowrap">
+                    <i class="fa-solid fa-hammer text-amber-400 mr-1"></i> Constructor (<span id="count-builder">0</span>)
                 </button>
-                <button onclick="setFilter('lab')" data-filter="lab" class="filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-card text-slate-300 border border-coc-border hover:border-fuchsia-400/50 transition cursor-pointer whitespace-nowrap">
-                    <i class="fa-solid fa-flask text-fuchsia-400 mr-1"></i> Laboratorio (<span id="count-lab">0</span>)
+                <button onclick="setCategoryFilter('research')" data-cat="research" class="cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-card text-slate-300 border border-coc-border transition cursor-pointer whitespace-nowrap">
+                    <i class="fa-solid fa-flask text-fuchsia-400 mr-1"></i> Laboratorio/Mascotas (<span id="count-research">0</span>)
                 </button>
-                <button onclick="setFilter('builder_base')" data-filter="builder_base" class="filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-card text-slate-300 border border-coc-border hover:border-sky-400/50 transition cursor-pointer whitespace-nowrap">
+                <button onclick="setCategoryFilter('builder_base')" data-cat="builder_base" class="cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-card text-slate-300 border border-coc-border transition cursor-pointer whitespace-nowrap">
                     <i class="fa-solid fa-gear text-sky-400 mr-1"></i> Base Constructor (<span id="count-bb">0</span>)
                 </button>
             </div>
 
             <div class="text-xs text-slate-400 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span>Actualizando en tiempo real</span>
+                <span id="active-alert-summary">Avisando 15 min antes</span>
             </div>
         </div>
 
-        <!-- Active Upgrades Grid -->
+        <!-- Cuadrícula de Mejoras Activas -->
         <section id="upgrades-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Cards injected via JS -->
+            <!-- Tarjetas generadas dinámicamente -->
         </section>
 
-        <!-- Helpers / Asistentes Section -->
-        <section class="bg-coc-card border border-coc-border rounded-2xl p-5 shadow-md">
-            <div class="flex items-center justify-between mb-4">
+        <!-- Sección de Asistentes de la Aldea -->
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 sm:p-5 shadow-md">
+            <div class="flex items-center justify-between mb-3.5">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300">
                         <i class="fa-solid fa-user-astronaut"></i>
                     </div>
                     <div>
-                        <h2 class="clash-title text-lg text-white">Asistentes de la Aldea</h2>
-                        <p class="text-xs text-slate-400">Enfriamiento (Cooldown) y asignaciones activas</p>
+                        <h3 class="clash-title text-base sm:text-lg text-white">Asistentes de la Aldea</h3>
+                        <p class="text-xs text-slate-400">Enfriamiento (Cooldown) y disponibilidad</p>
                     </div>
                 </div>
             </div>
-
             <div id="helpers-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <!-- Helpers injected via JS -->
-            </div>
-        </section>
-
-        <!-- Village Overview Summary -->
-        <section class="bg-coc-card border border-coc-border rounded-2xl p-5 shadow-md">
-            <h2 class="clash-title text-lg text-white mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-crown text-coc-gold"></i>
-                <span>Resumen Rápido del Perfil (#Q8Y9PQRP8)</span>
-            </h2>
-            <div id="village-summary" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center">
-                <!-- Summary stats injected via JS -->
+                <!-- Asistentes generados dinámicamente -->
             </div>
         </section>
 
     </main>
 
-    <!-- Footer -->
+    <!-- Pie de Página -->
     <footer class="border-t border-coc-border bg-coc-card/60 py-4 px-4 text-center text-xs text-slate-500">
-        <p>Notificador de Mejoras Clash of Clans • Los datos se guardan localmente en tu navegador.</p>
+        <p>Notificador de Mejoras CoC • Guardado automáticamente en tu dispositivo.</p>
     </footer>
 
-    <!-- Modal: Paste New JSON -->
-    <div id="json-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-coc-card border-2 border-coc-gold/60 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4">
+    <!-- ===================================================================== -->
+    <!-- MODALES (SIN ALERT NI CONFIRM NATIVOS)                                -->
+    <!-- ===================================================================== -->
+
+    <!-- Modal 1: Actualizar JSON de la Aldea Actual -->
+    <div id="modal-json" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-coc-card border-2 border-coc-gold/60 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="clash-title text-xl text-coc-gold flex items-center gap-2">
-                    <i class="fa-solid fa-code"></i>
-                    <span>Importar JSON de Clash of Clans</span>
+                <h3 class="clash-title text-lg sm:text-xl text-coc-gold flex items-center gap-2">
+                    <i class="fa-solid fa-file-code"></i>
+                    <span>Importar JSON en Aldea Actual</span>
                 </h3>
-                <button onclick="toggleJsonModal(false)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
+                <button onclick="closeModal('modal-json')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <p class="text-xs sm:text-sm text-slate-300">
-                Pega aquí el JSON exportado desde <span class="text-coc-gold font-semibold">Ajustes &gt; Más ajustes &gt; Exportar datos de la aldea</span> en Clash of Clans. Se detectarán automáticamente todos los constructores, laboratorio, mascotas y héroes en mejora.
+            <p class="text-xs text-slate-300">
+                Pega el JSON exportado desde <span class="text-coc-gold font-semibold">Ajustes &gt; Más ajustes &gt; Exportar datos de la aldea</span> en Clash of Clans. Se reemplazarán los temporizadores de <strong id="json-target-village-name" class="text-white">esta aldea</strong>.
             </p>
-            <textarea id="json-input" rows="10" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl p-3 text-xs font-mono text-emerald-300 focus:outline-none" placeholder='{"tag":"#Q8Y9PQRP8","timestamp":...}'></textarea>
-            <div id="json-error" class="hidden text-xs text-rose-400 bg-rose-950/50 border border-rose-500/40 rounded-lg p-2.5"></div>
-            <div class="flex items-center justify-between gap-3 pt-2">
-                <button onclick="resetToDefaultJson()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
-                    Restaurar JSON Original
+            <textarea id="json-update-input" rows="8" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl p-3 text-xs font-mono text-emerald-300 focus:outline-none" placeholder='{"tag":"#Q8Y9PQRP8","timestamp":...}'></textarea>
+            <div id="json-update-error" class="hidden text-xs text-rose-300 bg-rose-950/60 border border-rose-500/40 rounded-lg p-2.5"></div>
+            <div class="flex items-center justify-between gap-2 pt-1">
+                <button onclick="restoreDefaultVillage1()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
+                    Restaurar Aldea #Q8Y9PQRP8
                 </button>
                 <div class="flex items-center gap-2">
-                    <button onclick="toggleJsonModal(false)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold cursor-pointer">
+                    <button onclick="closeModal('modal-json')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer">
                         Cancelar
                     </button>
-                    <button onclick="importNewJson()" class="btn-coc px-5 py-2 rounded-xl bg-gradient-to-b from-amber-400 to-amber-600 text-slate-950 font-bold text-xs sm:text-sm shadow-coc-gold cursor-pointer">
+                    <button onclick="applyJsonToCurrentVillage()" class="btn-coc px-4 py-2 rounded-xl bg-gradient-to-b from-amber-400 to-amber-600 text-slate-950 font-extrabold text-xs shadow-coc-gold cursor-pointer">
                         Cargar Mejoras
                     </button>
                 </div>
@@ -316,61 +420,196 @@
         </div>
     </div>
 
-    <!-- Modal: Add Custom Manual Timer -->
-    <div id="custom-timer-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-coc-card border-2 border-coc-border rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4">
+    <!-- Modal 2: Nueva Aldea (+ Nueva Aldea) -->
+    <div id="modal-new-village" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-coc-card border-2 border-coc-gold/60 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="clash-title text-xl text-white flex items-center gap-2">
-                    <i class="fa-solid fa-stopwatch text-coc-gold"></i>
-                    <span>Añadir Temporizador Manual</span>
+                <h3 class="clash-title text-lg sm:text-xl text-coc-gold flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    <span>Añadir Nueva Aldea</span>
                 </h3>
-                <button onclick="toggleCustomTimerModal(false)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
+                <button onclick="closeModal('modal-new-village')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+
+            <!-- Selector de método -->
+            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-coc-border">
+                <button id="new-v-tab-json" onclick="switchNewVillageMode('json')" class="py-1.5 rounded-lg text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer">
+                    Pegar JSON de CoC
+                </button>
+                <button id="new-v-tab-blank" onclick="switchNewVillageMode('blank')" class="py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">
+                    Aldea Vacía / Manual
+                </button>
+            </div>
+
             <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre de la mejora o evento</label>
-                    <input id="custom-name" type="text" placeholder="Ej: Torre Infernal -> Nvl 8" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría</label>
-                    <select id="custom-category" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-                        <option value="home">Aldea Principal (Constructor)</option>
-                        <option value="lab">Laboratorio</option>
-                        <option value="builder_base">Base del Constructor</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Días</label>
-                        <input id="custom-days" type="number" min="0" value="0" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-sm text-white">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre de la pestaña</label>
+                        <input id="new-village-name" type="text" placeholder="Ej: Aldea Secundaria" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Horas</label>
-                        <input id="custom-hours" type="number" min="0" max="23" value="1" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-sm text-white">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Etiqueta / Tag (opcional)</label>
+                        <input id="new-village-tag" type="text" placeholder="Ej: #2PP98L0" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs font-mono text-coc-gold focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Sección JSON -->
+                <div id="new-village-json-section">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">JSON Exportado de Clash of Clans</label>
+                    <textarea id="new-village-json" rows="6" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl p-3 text-xs font-mono text-emerald-300 focus:outline-none" placeholder='{"tag":"#...","buildings":[...]}'></textarea>
+                </div>
+
+                <!-- Sección Pase Inicial -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Pase Constructor (%)</label>
+                        <select id="new-village-b-boost" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
+                            <option value="0">0% (Sin Pase)</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                            <option value="20">20%</option>
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Minutos</label>
-                        <input id="custom-mins" type="number" min="0" max="59" value="0" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-sm text-white">
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Pase Investigación (%)</label>
+                        <select id="new-village-r-boost" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
+                            <option value="0">0% (Sin Pase)</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                            <option value="20">20%</option>
+                        </select>
                     </div>
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="toggleCustomTimerModal(false)" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs sm:text-sm font-semibold cursor-pointer">
+
+            <div id="new-village-error" class="hidden text-xs text-rose-300 bg-rose-950/60 border border-rose-500/40 rounded-lg p-2.5"></div>
+
+            <div class="flex justify-end gap-2 pt-1">
+                <button onclick="closeModal('modal-new-village')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer">
                     Cancelar
                 </button>
-                <button onclick="addCustomTimer()" class="btn-coc px-4 py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 font-bold text-xs sm:text-sm shadow-coc-green cursor-pointer">
+                <button onclick="createNewVillage()" class="btn-coc px-4 py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 font-extrabold text-xs shadow-coc-green cursor-pointer">
+                    Crear Aldea
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Añadir Mejora Manual -->
+    <div id="modal-add-timer" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-coc-card border-2 border-emerald-400/50 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="clash-title text-lg sm:text-xl text-white flex items-center gap-2">
+                    <i class="fa-solid fa-stopwatch text-emerald-400"></i>
+                    <span>Añadir Mejora Manual</span>
+                </h3>
+                <button onclick="closeModal('modal-add-timer')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre de la mejora</label>
+                        <input id="manual-timer-name" type="text" placeholder="Ej: Ballesta / Reina Arquera" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nivel destino</label>
+                        <input id="manual-timer-lvl" type="number" min="1" max="150" placeholder="Ej: 15" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría (Aplica descuento del Pase)</label>
+                    <select id="manual-timer-cat" onchange="updateManualTimerPreview()" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                        <option value="builder">Aldea Principal (Constructor)</option>
+                        <option value="research">Laboratorio (Investigación)</option>
+                        <option value="pet">Caseta de Mascotas (Investigación)</option>
+                        <option value="builder_base">Base del Constructor (Constructor)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Duración base (sin descuento del Pase)</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <span class="block text-[10px] text-slate-400 mb-0.5">Días</span>
+                            <input id="manual-timer-days" type="number" min="0" value="1" oninput="updateManualTimerPreview()" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
+                        </div>
+                        <div>
+                            <span class="block text-[10px] text-slate-400 mb-0.5">Horas</span>
+                            <input id="manual-timer-hours" type="number" min="0" max="23" value="0" oninput="updateManualTimerPreview()" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
+                        </div>
+                        <div>
+                            <span class="block text-[10px] text-slate-400 mb-0.5">Minutos</span>
+                            <input id="manual-timer-mins" type="number" min="0" max="59" value="0" oninput="updateManualTimerPreview()" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vista previa de cálculo con Pase de Oro -->
+                <div id="manual-timer-preview" class="bg-slate-900/90 border border-coc-gold/30 rounded-xl p-2.5 text-xs text-slate-300 flex items-center justify-between">
+                    <span>Tiempo final con Pase:</span>
+                    <span id="manual-preview-val" class="font-bold text-coc-gold">1d 00h 00m</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-1">
+                <button onclick="closeModal('modal-add-timer')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer">
+                    Cancelar
+                </button>
+                <button onclick="createManualTimer()" class="btn-coc px-4 py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 font-extrabold text-xs shadow-coc-green cursor-pointer">
                     Iniciar Temporizador
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- Modal 4: Renombrar Aldea -->
+    <div id="modal-rename-village" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-coc-card border border-coc-border rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <h3 class="clash-title text-lg text-white">Renombrar Aldea</h3>
+            <div class="space-y-2.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nombre</label>
+                    <input id="rename-village-name" type="text" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Tag (#)</label>
+                    <input id="rename-village-tag" type="text" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs font-mono text-coc-gold focus:outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('modal-rename-village')" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer">Cancelar</button>
+                <button onclick="saveRenameVillage()" class="btn-coc px-4 py-2 rounded-xl bg-coc-gold text-slate-950 font-bold text-xs cursor-pointer">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: Confirmar Eliminación de Aldea -->
+    <div id="modal-delete-village" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-coc-card border border-rose-500/50 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center gap-2.5 text-rose-400">
+                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                <h3 class="clash-title text-lg text-white">¿Eliminar esta aldea?</h3>
+            </div>
+            <p class="text-xs text-slate-300">
+                Se borrará la pestaña <strong id="delete-village-confirm-name" class="text-white"></strong> junto con todos sus temporizadores guardados. Esta acción no se puede deshacer.
+            </p>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('modal-delete-village')" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer">Cancelar</button>
+                <button onclick="confirmDeleteActiveVillage()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs cursor-pointer">Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ==========================================
+        // =====================================================================
         // 1. DICCIONARIO COMPLETO DE IDs DE CLASH OF CLANS (ESPAÑOL)
-        // ==========================================
+        // =====================================================================
         const COC_DICT = {
             // Edificios Aldea Principal (1000xxx)
             1000000: { name: "Campamento", icon: "fa-campground" },
@@ -399,7 +638,7 @@
             1000028: { name: "Controlador Aéreo", icon: "fa-wind" },
             1000029: { name: "Fábrica de Hechizos Oscuros", icon: "fa-cauldron" },
             1000031: { name: "Águila de Artillería", icon: "fa-feather-pointed" },
-            1000032: { name: "Cohete de Defensa / Torre Bombardeo", icon: "fa-explosion" },
+            1000032: { name: "Torre Bombardeo", icon: "fa-explosion" },
             1000059: { name: "Taller de Asedio", icon: "fa-gears" },
             1000067: { name: "Catapulta", icon: "fa-meteor" },
             1000068: { name: "Caseta de Mascotas", icon: "fa-paw" },
@@ -407,16 +646,14 @@
             1000071: { name: "Salón de Héroes", icon: "fa-crown" },
             1000072: { name: "Torre de Hechizos", icon: "fa-book-sparkles" },
             1000077: { name: "Monolito", icon: "fa-monument" },
-            1000079: { name: "Cuartel de Aprendices / Guardería", icon: "fa-people-group" },
+            1000079: { name: "Guardería / Aprendices", icon: "fa-people-group" },
             1000084: { name: "Torre Multi-Arquera", icon: "fa-arrows-to-dot" },
             1000085: { name: "Cañón Rebote", icon: "fa-circle-dot" },
             1000089: { name: "Torre Multi-Equipo", icon: "fa-tower-observation" },
             1000093: { name: "Escupidor de Fuego", icon: "fa-dragon" },
-            1000097: { name: "Defensa Modular (Superestructura)", icon: "fa-cubes" },
-            1000106: { name: "Estructura Especial", icon: "fa-landmark" },
+            1000097: { name: "Defensa Modular", icon: "fa-cubes" },
 
-            // Edificios Base del Constructor (1000033 - 1000082)
-            1000033: { name: "Muro (Constructor)", icon: "fa-border-all" },
+            // Edificios Base del Constructor
             1000034: { name: "Taller del Constructor", icon: "fa-house-chimney" },
             1000035: { name: "Mina de Oro (Constructor)", icon: "fa-coins" },
             1000036: { name: "Recolector Elixir (Constructor)", icon: "fa-droplet" },
@@ -446,18 +683,18 @@
 
             // Tropas & Máquinas (4000xxx)
             4000000: { name: "Bárbaro", icon: "fa-khanda" },
-            4000001: { name: "Arquera", icon: "fa-bow-arrow" },
+            4000001: { name: "Arquera", icon: "fa-bullseye" },
             4000002: { name: "Duende", icon: "fa-sack-dollar" },
             4000003: { name: "Gigante", icon: "fa-hand-fist" },
             4000004: { name: "Rompemuros", icon: "fa-bomb" },
-            4000005: { name: "Globo Bombástico", icon: "fa-hot-air-balloon" },
+            4000005: { name: "Globo Bombástico", icon: "fa-cloud" },
             4000006: { name: "Mago", icon: "fa-hat-wizard" },
             4000007: { name: "Curandera", icon: "fa-feather" },
             4000008: { name: "Dragón", icon: "fa-dragon" },
             4000009: { name: "P.E.K.K.A", icon: "fa-robot" },
             4000010: { name: "Esbirro", icon: "fa-ghost" },
             4000011: { name: "Montapuercos", icon: "fa-hammer" },
-            4000012: { name: "Valquiria", icon: "fa-axe" },
+            4000012: { name: "Valquiria", icon: "fa-shield" },
             4000013: { name: "Gólem", icon: "fa-cubes-stacked" },
             4000015: { name: "Bruja", icon: "fa-skull" },
             4000017: { name: "Sabueso de Lava", icon: "fa-fire" },
@@ -477,7 +714,6 @@
             4000097: { name: "Arraiga", icon: "fa-tree" },
             4000110: { name: "Druida", icon: "fa-leaf" },
             4000123: { name: "Lanzador", icon: "fa-bullseye" },
-            4000195: { name: "Tropa Especial", icon: "fa-star" },
 
             // Héroes (28000xxx)
             28000000: { name: "Rey Bárbaro", icon: "fa-crown" },
@@ -500,9 +736,9 @@
             26000011: { name: "Hechizo de Aceleración", icon: "fa-forward-fast" },
             26000016: { name: "Hechizo de Clonación", icon: "fa-clone" },
             26000017: { name: "Hechizo de Esqueletos", icon: "fa-skull" },
-            26000028: { name: "Hechizo de Murciélagos", icon: "fa-bat" },
+            26000028: { name: "Hechizo de Murciélagos", icon: "fa-ghost" },
             26000035: { name: "Hechizo de Invisibilidad", icon: "fa-eye-slash" },
-            26000053: { name: "Hechizo de Invocación", icon: "fa-portal-enter" },
+            26000053: { name: "Hechizo de Invocación", icon: "fa-wand-sparkles" },
             26000070: { name: "Hechizo de Maleza", icon: "fa-seedling" },
             26000109: { name: "Hechizo de Resurrección", icon: "fa-ankh" },
 
@@ -511,184 +747,137 @@
             73000001: { name: "Búho Eléctrico", icon: "fa-crow" },
             73000002: { name: "Yak Poderoso", icon: "fa-hippo" },
             73000003: { name: "Unicornio", icon: "fa-horse" },
-            73000004: { name: "Fénix", icon: "fa-phoenix-framework" },
+            73000004: { name: "Fénix", icon: "fa-fire" },
             73000007: { name: "Diggy", icon: "fa-paw" },
             73000008: { name: "Lagarto Venenoso", icon: "fa-staff-snake" },
             73000009: { name: "Morsa Helada", icon: "fa-icicles" },
-            73000010: { name: "Zorro Espiritual", icon: "fa-fox" },
+            73000010: { name: "Zorro Espiritual", icon: "fa-paw" },
 
-            // Asistentes / Helpers (93000xxx)
-            93000000: { name: "Aprendiz de Constructor", icon: "fa-helmet-safety", role: "Acelera edificios/héroes" },
+            // Asistentes (93000xxx)
+            93000000: { name: "Aprendiz de Constructor", icon: "fa-helmet-safety", role: "Acelera edificios y héroes" },
             93000001: { name: "Ayudante de Laboratorio", icon: "fa-flask-vial", role: "Acelera investigaciones" },
             93000002: { name: "Alquimista", icon: "fa-scale-balanced", role: "Convierte recursos diarios" },
-            93000003: { name: "Prospector / Asistente", icon: "fa-compass", role: "Asistente de aldea" }
+            93000003: { name: "Prospector", icon: "fa-compass", role: "Asistente de aldea" }
         };
 
-        // ==========================================
-        // 2. JSON INICIAL PRECARGADO DEL USUARIO
-        // ==========================================
-        const DEFAULT_USER_JSON = {"tag":"#Q8Y9PQRP8","timestamp":1795316213,"helpers":[{"data":93000000,"lvl":5,"helper_cooldown":15946},{"data":93000001,"lvl":4,"helper_cooldown":15946},{"data":93000002,"lvl":1,"helper_cooldown":15946},{"data":93000003,"lvl":1}],"buildings":[{"data":1000001,"lvl":17,"timer":205227,"helper_recurrent":true,"weapon":1},{"data":1000011,"lvl":12,"timer":49484},{"data":1000013,"lvl":11,"gear_up":1},{"data":1000011,"lvl":11,"timer":9673},{"data":1000011,"lvl":12,"timer":128874},{"data":1000011,"lvl":11,"timer":88513},{"data":1000097,"types":[{"data":103000011,"modules":[{"data":102000033,"lvl":1},{"data":102000034,"lvl":1},{"data":102000035,"lvl":1}]},{"data":103000012,"modules":[{"data":102000036,"lvl":1},{"data":102000037,"lvl":1},{"data":102000038,"lvl":1}]},{"data":103000013,"modules":[{"data":102000039,"lvl":1},{"data":102000040,"lvl":1},{"data":102000041,"lvl":1}]}]},{"data":1000000,"lvl":12,"cnt":3},{"data":1000000,"lvl":13,"cnt":1},{"data":1000002,"lvl":15,"cnt":7},{"data":1000003,"lvl":15,"cnt":4},{"data":1000004,"lvl":15,"cnt":6},{"data":1000004,"lvl":16,"cnt":1},{"data":1000005,"lvl":16,"cnt":4},{"data":1000006,"lvl":17,"cnt":1},{"data":1000007,"lvl":15,"cnt":1},{"data":1000009,"lvl":2,"cnt":1},{"data":1000009,"lvl":19,"cnt":1},{"data":1000010,"lvl":11,"cnt":51},{"data":1000010,"lvl":12,"cnt":273},{"data":1000010,"lvl":18,"cnt":1},{"data":1000011,"lvl":9,"cnt":1},{"data":1000012,"lvl":12,"cnt":4},{"data":1000013,"lvl":10,"cnt":1},{"data":1000013,"lvl":11,"cnt":2},{"data":1000014,"lvl":12,"cnt":1},{"data":1000015,"lvl":2,"cnt":5},{"data":1000019,"lvl":2,"cnt":1},{"data":1000019,"lvl":4,"cnt":3},{"data":1000019,"lvl":5,"cnt":1},{"data":1000020,"lvl":7,"cnt":1},{"data":1000021,"lvl":6,"cnt":4},{"data":1000023,"lvl":7,"cnt":1},{"data":1000023,"lvl":8,"cnt":1},{"data":1000023,"lvl":9,"cnt":1},{"data":1000024,"lvl":8,"cnt":1},{"data":1000026,"lvl":11,"cnt":1},{"data":1000027,"lvl":7,"cnt":2},{"data":1000027,"lvl":8,"cnt":1},{"data":1000028,"lvl":7,"cnt":2},{"data":1000029,"lvl":7,"cnt":1},{"data":1000032,"lvl":7,"cnt":2},{"data":1000059,"lvl":4,"cnt":1},{"data":1000067,"lvl":4,"cnt":1},{"data":1000067,"lvl":5,"cnt":1},{"data":1000068,"lvl":4,"cnt":1},{"data":1000070,"lvl":7,"cnt":1},{"data":1000071,"lvl":9,"cnt":1},{"data":1000072,"lvl":1,"cnt":2},{"data":1000077,"lvl":4,"cnt":1},{"data":1000079,"lvl":2,"cnt":1},{"data":1000084,"lvl":1,"cnt":3},{"data":1000085,"lvl":1,"cnt":3},{"data":1000089,"lvl":2,"cnt":2},{"data":1000093,"lvl":1,"cnt":1},{"data":1000106,"lvl":1,"cnt":1}],"traps":[{"data":12000000,"lvl":1,"cnt":1},{"data":12000000,"lvl":5,"cnt":7},{"data":12000001,"lvl":2,"cnt":6},{"data":12000001,"lvl":3,"cnt":3},{"data":12000002,"lvl":1,"cnt":2},{"data":12000002,"lvl":2,"cnt":3},{"data":12000002,"lvl":3,"cnt":3},{"data":12000005,"lvl":1,"cnt":3},{"data":12000005,"lvl":2,"cnt":3},{"data":12000005,"lvl":3,"cnt":1},{"data":12000006,"lvl":1,"cnt":6},{"data":12000006,"lvl":2,"cnt":3},{"data":12000008,"lvl":1,"cnt":3},{"data":12000008,"lvl":2,"cnt":1},{"data":12000016,"lvl":1,"cnt":1},{"data":12000020,"lvl":1,"cnt":1}],"decos":[{"data":18000065,"cnt":1},{"data":18000114,"cnt":1},{"data":18000175,"cnt":1},{"data":18000184,"cnt":1},{"data":18000193,"cnt":1},{"data":18000234,"cnt":1},{"data":18000248,"cnt":1}],"obstacles":[{"data":8000000,"cnt":3},{"data":8000004,"cnt":6},{"data":8000006,"cnt":4},{"data":8000007,"cnt":4},{"data":8000008,"cnt":3},{"data":8000009,"cnt":2},{"data":8000010,"cnt":6},{"data":8000013,"cnt":1},{"data":8000082,"cnt":1},{"data":8000117,"cnt":1},{"data":8000127,"cnt":1},{"data":8000128,"cnt":1},{"data":8000131,"cnt":4},{"data":8000133,"cnt":1},{"data":8000135,"cnt":1},{"data":8000137,"cnt":1},{"data":8000138,"cnt":3},{"data":8000139,"cnt":4}],"units":[{"data":4000000,"lvl":6},{"data":4000001,"lvl":5},{"data":4000002,"lvl":8},{"data":4000003,"lvl":6},{"data":4000004,"lvl":4},{"data":4000005,"lvl":10},{"data":4000006,"lvl":5},{"data":4000007,"lvl":5},{"data":4000008,"lvl":9,"timer":64323,"helper_recurrent":true},{"data":4000009,"lvl":9},{"data":4000010,"lvl":3},{"data":4000011,"lvl":11},{"data":4000012,"lvl":3},{"data":4000013,"lvl":5},{"data":4000015,"lvl":5},{"data":4000017,"lvl":6},{"data":4000022,"lvl":6},{"data":4000023,"lvl":4},{"data":4000024,"lvl":2},{"data":4000053,"lvl":4},{"data":4000058,"lvl":2},{"data":4000059,"lvl":8},{"data":4000065,"lvl":5},{"data":4000082,"lvl":1},{"data":4000095,"lvl":2},{"data":4000097,"lvl":1},{"data":4000110,"lvl":1},{"data":4000123,"lvl":2},{"data":4000195,"lvl":1}],"siege_machines":[{"data":4000051,"lvl":1},{"data":4000052,"lvl":2},{"data":4000062,"lvl":4},{"data":4000075,"lvl":1}],"heroes":[{"data":28000000,"lvl":57},{"data":28000001,"lvl":50},{"data":28000002,"lvl":35},{"data":28000004,"lvl":30},{"data":28000006,"lvl":46},{"data":28000007,"lvl":7}],"spells":[{"data":26000000,"lvl":12},{"data":26000001,"lvl":7},{"data":26000002,"lvl":6},{"data":26000003,"lvl":4},{"data":26000005,"lvl":3},{"data":26000009,"lvl":2},{"data":26000010,"lvl":3},{"data":26000011,"lvl":3},{"data":26000016,"lvl":1},{"data":26000017,"lvl":3},{"data":26000028,"lvl":2},{"data":26000035,"lvl":4},{"data":26000053,"lvl":2},{"data":26000070,"lvl":3},{"data":26000109,"lvl":1}],"pets":[{"data":73000000,"lvl":3},{"data":73000001,"lvl":6},{"data":73000002,"lvl":2},{"data":73000003,"lvl":9}],"equipment":[{"data":90000000,"lvl":2},{"data":90000001,"lvl":12},{"data":90000002,"lvl":2},{"data":90000003,"lvl":9},{"data":90000004,"lvl":8},{"data":90000005,"lvl":6},{"data":90000006,"lvl":15},{"data":90000007,"lvl":6},{"data":90000008,"lvl":16},{"data":90000009,"lvl":1},{"data":90000010,"lvl":12},{"data":90000011,"lvl":1},{"data":90000013,"lvl":1},{"data":90000014,"lvl":15},{"data":90000015,"lvl":12},{"data":90000016,"lvl":1},{"data":90000017,"lvl":18},{"data":90000019,"lvl":1},{"data":90000020,"lvl":10},{"data":90000022,"lvl":15},{"data":90000024,"lvl":9},{"data":90000032,"lvl":12},{"data":90000034,"lvl":9},{"data":90000035,"lvl":12},{"data":90000039,"lvl":12},{"data":90000040,"lvl":10},{"data":90000041,"lvl":1},{"data":90000042,"lvl":5},{"data":90000043,"lvl":8},{"data":90000044,"lvl":1},{"data":90000047,"lvl":1},{"data":90000048,"lvl":15},{"data":90000049,"lvl":1},{"data":90000050,"lvl":1},{"data":90000051,"lvl":1},{"data":90000052,"lvl":6},{"data":90000053,"lvl":11},{"data":90000057,"lvl":1},{"data":90000060,"lvl":1},{"data":90000061,"lvl":1},{"data":90000062,"lvl":1},{"data":90000063,"lvl":1}],"house_parts":[82000000,82000001,82000002,82000008,82000009,82000010,82000011,82000013,82000014,82000015,82000016,82000017,82000029,82000047,82000048,82000049,82000053,82000058,82000059,82000060,82000061,82000062,82000063],"skins":[52000292,52000337,52000320],"building_variants":[],"sceneries":[],"buildings2":[{"data":1000033,"lvl":1,"cnt":40},{"data":1000033,"lvl":2,"cnt":100},{"data":1000033,"lvl":3,"cnt":40},{"data":1000034,"lvl":9,"cnt":1},{"data":1000035,"lvl":3,"cnt":1},{"data":1000035,"lvl":7,"cnt":2},{"data":1000036,"lvl":7,"cnt":1},{"data":1000036,"lvl":8,"cnt":1},{"data":1000037,"lvl":3,"cnt":1},{"data":1000037,"lvl":7,"cnt":1},{"data":1000037,"lvl":8,"cnt":1},{"data":1000038,"lvl":8,"cnt":2},{"data":1000039,"lvl":7,"cnt":1},{"data":1000040,"lvl":10,"cnt":1},{"data":1000041,"lvl":1,"cnt":1},{"data":1000041,"lvl":6,"cnt":2},{"data":1000042,"lvl":1,"cnt":6},{"data":1000043,"lvl":1,"cnt":1},{"data":1000043,"lvl":5,"cnt":2},{"data":1000044,"lvl":4,"cnt":1},{"data":1000044,"lvl":5,"cnt":1},{"data":1000044,"lvl":6,"cnt":1},{"data":1000045,"lvl":9,"cnt":1},{"data":1000046,"lvl":8,"cnt":1},{"data":1000048,"lvl":5,"cnt":1},{"data":1000048,"lvl":6,"cnt":2},{"data":1000049,"lvl":1,"cnt":1},{"data":1000050,"lvl":1,"cnt":2},{"data":1000050,"lvl":5,"cnt":3},{"data":1000051,"lvl":5,"cnt":1},{"data":1000052,"lvl":1,"cnt":1},{"data":1000053,"lvl":1,"cnt":1},{"data":1000054,"lvl":6,"cnt":1},{"data":1000055,"lvl":4,"cnt":2},{"data":1000056,"lvl":6,"cnt":1},{"data":1000057,"lvl":1,"cnt":1},{"data":1000058,"lvl":6,"cnt":1},{"data":1000063,"lvl":1,"cnt":1},{"data":1000065,"lvl":1,"cnt":1},{"data":1000078,"lvl":1,"cnt":1},{"data":1000080,"lvl":1,"cnt":1},{"data":1000082,"lvl":1,"cnt":1}],"traps2":[{"data":12000010,"lvl":1,"cnt":2},{"data":12000010,"lvl":2,"cnt":2},{"data":12000010,"lvl":3,"cnt":2},{"data":12000011,"lvl":4,"cnt":5},{"data":12000013,"lvl":5,"cnt":5},{"data":12000014,"lvl":1,"cnt":2},{"data":12000014,"lvl":5,"cnt":2}],"decos2":[],"obstacles2":[{"data":8000041,"cnt":3},{"data":8000049,"cnt":1},{"data":8000053,"cnt":1},{"data":8000055,"cnt":1},{"data":8000056,"cnt":1},{"data":8000057,"cnt":2},{"data":8000058,"cnt":7},{"data":8000059,"cnt":4},{"data":8000060,"cnt":1},{"data":8000063,"cnt":13},{"data":8000064,"cnt":12},{"data":8000091,"cnt":4},{"data":8000092,"cnt":2},{"data":8000093,"cnt":1},{"data":8000095,"cnt":2},{"data":8000096,"cnt":1},{"data":8000097,"cnt":2},{"data":8000098,"cnt":2},{"data":8000099,"cnt":1},{"data":8000100,"cnt":4},{"data":8000101,"cnt":2},{"data":8000102,"cnt":2},{"data":8000105,"cnt":1},{"data":8000106,"cnt":1},{"data":8000107,"cnt":1}],"units2":[{"data":4000031,"lvl":15},{"data":4000032,"lvl":10},{"data":4000033,"lvl":9},{"data":4000034,"lvl":10},{"data":4000035,"lvl":10},{"data":4000036,"lvl":14},{"data":4000037,"lvl":10},{"data":4000038,"lvl":11},{"data":4000041,"lvl":9},{"data":4000042,"lvl":10}],"heroes2":[{"data":28000003,"lvl":15,"timer":266055},{"data":28000005,"lvl":15}],"skins2":[],"building_variants2":[],"sceneries2":[],"emotes":[126000000,126000001,126000002,126000003,126000004],"boosts":{}};
+        // =====================================================================
+        // 2. DATOS INICIALES PRECARGADOS (ALDEA #Q8Y9PQRP8)
+        // =====================================================================
+        function createDefaultVillage1() {
+            const now = Date.now();
+            const makeTimer = (id, name, icon, fromLvl, toLvl, category, subLabel, seconds, helperAssigned = null) => ({
+                id,
+                name,
+                icon,
+                fromLvl,
+                toLvl,
+                category,
+                subLabel,
+                totalSeconds: seconds,
+                endTimeMs: now + seconds * 1000,
+                appliedBoostPct: 0,
+                helperAssigned,
+                preNotified: false,
+                doneNotified: false
+            });
 
-        // ==========================================
-        // 3. ESTADO GLOBAL DE LA APLICACIÓN
-        // ==========================================
-        let villageData = null;
-        let activeUpgrades = [];
-        let customTimers = [];
-        let helpersList = [];
-        let timeMode = 'live'; // 'live' (usa timestamp del JSON) o 'raw' (cuenta atrás desde carga)
-        let appLoadUnix = Math.floor(Date.now() / 1000);
-        let activeFilter = 'all';
-        let builderPotionActive = false;
-        let labPotionActive = false;
-        let notifiedIds = new Set();
+            return {
+                id: "village_default_1",
+                name: "Aldea Principal",
+                tag: "#Q8Y9PQRP8",
+                builderBoost: 0,
+                researchBoost: 0,
+                autoRecalcOnBoostChange: true,
+                timers: [
+                    makeTimer("v1_t1", "Ayuntamiento", "fa-chess-rook", 17, 18, "builder", "Aldea Principal", 205227, "Aprendiz de Constructor (Nvl 5)"),
+                    makeTimer("v1_t2", "Torre de Magos #1", "fa-wand-sparkles", 12, 13, "builder", "Aldea Principal", 49484, null),
+                    makeTimer("v1_t3", "Torre de Magos #2", "fa-wand-sparkles", 11, 12, "builder", "Aldea Principal", 9673, null),
+                    makeTimer("v1_t4", "Torre de Magos #3", "fa-wand-sparkles", 12, 13, "builder", "Aldea Principal", 128874, null),
+                    makeTimer("v1_t5", "Torre de Magos #4", "fa-wand-sparkles", 11, 12, "builder", "Aldea Principal", 88513, null),
+                    makeTimer("v1_t6", "Dragón", "fa-dragon", 9, 10, "research", "Laboratorio", 64323, "Ayudante de Laboratorio (Nvl 4)"),
+                    makeTimer("v1_t7", "Máquina Bélica", "fa-robot", 15, 16, "builder_base", "Base del Constructor", 266055, null)
+                ],
+                helpers: [
+                    { id: 93000000, name: "Aprendiz de Constructor", lvl: 5, role: "Acelera edificios y héroes", icon: "fa-helmet-safety", cooldownEndMs: now + 15946 * 1000 },
+                    { id: 93000001, name: "Ayudante de Laboratorio", lvl: 4, role: "Acelera investigaciones", icon: "fa-flask-vial", cooldownEndMs: now + 15946 * 1000 },
+                    { id: 93000002, name: "Alquimista", lvl: 1, role: "Convierte recursos diarios", icon: "fa-scale-balanced", cooldownEndMs: now + 15946 * 1000 },
+                    { id: 93000003, name: "Prospector", lvl: 1, role: "Asistente de aldea", icon: "fa-compass", cooldownEndMs: now }
+                ]
+            };
+        }
 
-        // ==========================================
-        // 4. INICIALIZACIÓN Y PERSISTENCIA
-        // ==========================================
-        window.addEventListener('DOMContentLoaded', () => {
-            loadSavedState();
+        // =====================================================================
+        // 3. ESTADO GLOBAL Y PERSISTENCIA EN LOCALSTORAGE
+        // =====================================================================
+        const STORAGE_KEY = "coc_notifier_multi_v2";
+        let appState = {
+            activeVillageId: "village_default_1",
+            alertSettings: {
+                leadMinutes: 15,
+                notifyAtZero: true
+            },
+            villages: []
+        };
+
+        let activeCategoryFilter = "all";
+        let newVillageMode = "json";
+
+        window.addEventListener("DOMContentLoaded", () => {
+            loadAppState();
             updateNotificationButtonUI();
-            startTicker();
+            renderAll();
+            setInterval(tickSecond, 1000);
         });
 
-        function loadSavedState() {
+        function loadAppState() {
             try {
-                const savedJsonStr = localStorage.getItem('coc_tracker_json');
-                const savedCustom = localStorage.getItem('coc_tracker_custom');
-                const savedLoadUnix = localStorage.getItem('coc_tracker_load_unix');
-
-                if (savedCustom) {
-                    customTimers = JSON.parse(savedCustom);
-                }
-
-                if (savedJsonStr) {
-                    villageData = JSON.parse(savedJsonStr);
-                    appLoadUnix = savedLoadUnix ? parseInt(savedLoadUnix, 10) : Math.floor(Date.now() / 1000);
-                } else {
-                    villageData = DEFAULT_USER_JSON;
-                    appLoadUnix = Math.floor(Date.now() / 1000);
-                    localStorage.setItem('coc_tracker_json', JSON.stringify(villageData));
-                    localStorage.setItem('coc_tracker_load_unix', appLoadUnix.toString());
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && Array.isArray(parsed.villages) && parsed.villages.length > 0) {
+                        appState = parsed;
+                        if (!appState.alertSettings) {
+                            appState.alertSettings = { leadMinutes: 15, notifyAtZero: true };
+                        }
+                        if (!appState.villages.some(v => v.id === appState.activeVillageId)) {
+                            appState.activeVillageId = appState.villages[0].id;
+                        }
+                        return;
+                    }
                 }
             } catch (e) {
-                console.error("Error leyendo localStorage:", e);
-                villageData = DEFAULT_USER_JSON;
+                console.warn("Error leyendo almacenamiento local:", e);
             }
 
-            document.getElementById('json-input').value = JSON.stringify(villageData, null, 2);
-            parseVillageData();
+            // Primera carga: crear aldea #Q8Y9PQRP8 por defecto
+            appState = {
+                activeVillageId: "village_default_1",
+                alertSettings: {
+                    leadMinutes: 15,
+                    notifyAtZero: true
+                },
+                villages: [createDefaultVillage1()]
+            };
+            saveAppState();
         }
 
-        // ==========================================
-        // 5. PARSEO DEL JSON DE CLASH OF CLANS
-        // ==========================================
-        function parseVillageData() {
-            if (!villageData) return;
-
-            // Tag y fecha de exportación
-            const tag = villageData.tag || "#DESCONOCIDO";
-            document.getElementById('player-tag-badge').textContent = tag;
-
-            const exportTs = villageData.timestamp || Math.floor(Date.now() / 1000);
-            const exportDate = new Date(exportTs * 1000);
-            document.getElementById('export-date-label').textContent = 
-                `Exportado: ${exportDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} a las ${exportDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
-
-            // Extraer mejoras activas de todas las categorías del JSON
-            const categoriesToScan = [
-                { key: 'buildings', category: 'home', label: 'Aldea Principal' },
-                { key: 'traps', category: 'home', label: 'Trampa (Aldea)' },
-                { key: 'heroes', category: 'home', label: 'Héroe (Aldea)' },
-                { key: 'units', category: 'lab', label: 'Laboratorio (Tropa)' },
-                { key: 'spells', category: 'lab', label: 'Laboratorio (Hechizo)' },
-                { key: 'siege_machines', category: 'lab', label: 'Laboratorio (Asedio)' },
-                { key: 'pets', category: 'home', label: 'Caseta de Mascotas' },
-                { key: 'buildings2', category: 'builder_base', label: 'Base del Constructor' },
-                { key: 'traps2', category: 'builder_base', label: 'Trampa (Constructor)' },
-                { key: 'units2', category: 'builder_base', label: 'Lab. Estelar' },
-                { key: 'heroes2', category: 'builder_base', label: 'Héroe (Constructor)' }
-            ];
-
-            activeUpgrades = [];
-            let indexCounter = 0;
-
-            categoriesToScan.forEach(group => {
-                const items = villageData[group.key];
-                if (Array.isArray(items)) {
-                    items.forEach(item => {
-                        if (item.timer && item.timer > 0) {
-                            const info = COC_DICT[item.data] || { 
-                                name: `Elemento ID ${item.data}`, 
-                                icon: "fa-hammer" 
-                            };
-                            const currentLvl = item.lvl || 1;
-                            activeUpgrades.push({
-                                id: `${group.key}_${item.data}_${indexCounter++}`,
-                                dataId: item.data,
-                                name: info.name,
-                                icon: info.icon,
-                                currentLvl: currentLvl,
-                                targetLvl: currentLvl + 1,
-                                rawTimer: item.timer,
-                                exportTimestamp: exportTs,
-                                category: group.category,
-                                subLabel: group.label,
-                                helperAssigned: Boolean(item.helper_recurrent),
-                                isCustom: false
-                            });
-                        }
-                    });
-                }
-            });
-
-            // Asistentes (Helpers)
-            helpersList = (villageData.helpers || []).map(h => {
-                const info = COC_DICT[h.data] || { name: `Asistente ${h.data}`, icon: "fa-user-gear", role: "Asistente" };
-                return {
-                    id: h.data,
-                    name: info.name,
-                    icon: info.icon,
-                    role: info.role || "Asistente de Aldea",
-                    lvl: h.lvl || 1,
-                    cooldown: h.helper_cooldown || 0,
-                    exportTimestamp: exportTs
-                };
-            });
-
-            renderVillageSummary();
-            updateCounts();
-            renderAll();
+        function saveAppState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.warn("No se pudo guardar en localStorage:", e);
+            }
         }
 
-        // ==========================================
-        // 6. CÁLCULO DE TIEMPO RESTANTE
-        // ==========================================
-        function getRemainingSeconds(item) {
-            const nowUnix = Math.floor(Date.now() / 1000);
-            let remaining = 0;
+        function getActiveVillage() {
+            return appState.villages.find(v => v.id === appState.activeVillageId) || appState.villages[0];
+        }
 
-            if (item.isCustom) {
-                remaining = item.targetUnix - nowUnix;
-            } else if (timeMode === 'live') {
-                // Tiempo exacto basado en el timestamp del export + timer
-                const targetUnix = item.exportTimestamp + item.rawTimer;
-                remaining = targetUnix - nowUnix;
-            } else {
-                // Modo crudo: cuenta atrás desde el instante en que se cargó el JSON
-                const elapsedSinceLoad = nowUnix - appLoadUnix;
-                remaining = item.rawTimer - elapsedSinceLoad;
-            }
-
-            // Aplicar simulación de Pociones
-            if (builderPotionActive && item.category === 'home' && !item.subLabel.includes('Mascotas')) {
-                remaining -= 9 * 3600; // Poción del constructor ahorra 9 horas
-            }
-            if (labPotionActive && item.category === 'lab') {
-                remaining -= 23 * 3600; // Poción de investigación ahorra 23 horas
-            }
-
-            return Math.max(0, remaining);
+        // =====================================================================
+        // 4. LÓGICA DE TIEMPOS, PASE DE ORO Y NOTIFICACIONES
+        // =====================================================================
+        function getRemainingSeconds(timer) {
+            return Math.max(0, Math.ceil((timer.endTimeMs - Date.now()) / 1000));
         }
 
         function formatDuration(totalSeconds) {
@@ -697,431 +886,975 @@
             const h = Math.floor((totalSeconds % 86400) / 3600);
             const m = Math.floor((totalSeconds % 3600) / 60);
             const s = Math.floor(totalSeconds % 60);
-
-            const pad = (n) => String(n).padStart(2, '0');
-            if (d > 0) {
-                return `${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s`;
-            }
+            const pad = (n) => String(n).padStart(2, "0");
+            if (d > 0) return `${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s`;
             return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
         }
 
-        function formatCompletionDate(remainingSeconds) {
-            if (remainingSeconds <= 0) return "Listo para recoger";
-            const finishDate = new Date(Date.now() + remainingSeconds * 1000);
-            const today = new Date();
-            const isToday = finishDate.toDateString() === today.toDateString();
-            const tomorrow = new Date(today);
+        function formatClockTime(timestampMs) {
+            const target = new Date(timestampMs);
+            const now = new Date();
+            const isToday = target.toDateString() === now.toDateString();
+            const tomorrow = new Date(now);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            const isTomorrow = finishDate.toDateString() === tomorrow.toDateString();
+            const isTomorrow = target.toDateString() === tomorrow.toDateString();
 
-            const timeStr = finishDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            if (isToday) return `Hoy a las ${timeStr}`;
-            if (isTomorrow) return `Mañana a las ${timeStr}`;
-            return `${finishDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} • ${timeStr}`;
+            const hhmm = target.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+            if (isToday) return hhmm;
+            if (isTomorrow) return `Mañana ${hhmm}`;
+            return `${target.toLocaleDateString("es-ES", { day: "2-digit", month: "short" })} ${hhmm}`;
         }
 
-        // ==========================================
-        // 7. RENDERIZADO DE INTERFAZ
-        // ==========================================
-        function getAllCombinedItems() {
-            return [...activeUpgrades, ...customTimers];
+        // Bucle cada segundo: evalúa alertas en TODAS las aldeas y actualiza UI
+        function tickSecond() {
+            let stateChanged = false;
+            const leadSeconds = (appState.alertSettings.leadMinutes || 0) * 60;
+
+            appState.villages.forEach(village => {
+                village.timers.forEach(timer => {
+                    const rem = getRemainingSeconds(timer);
+
+                    // 1. Verificar aviso anticipado (cuando faltan <= X minutos y aún > 0)
+                    if (leadSeconds > 0 && rem > 0 && rem <= leadSeconds && !timer.preNotified) {
+                        timer.preNotified = true;
+                        stateChanged = true;
+                        fireTimerNotification(village, timer, "prealert", rem);
+                    }
+
+                    // 2. Verificar finalización al llegar a 00:00:00
+                    if (rem === 0 && !timer.doneNotified) {
+                        timer.doneNotified = true;
+                        stateChanged = true;
+                        if (appState.alertSettings.notifyAtZero || leadSeconds === 0) {
+                            fireTimerNotification(village, timer, "completed", 0);
+                        }
+                    }
+                });
+            });
+
+            if (stateChanged) {
+                saveAppState();
+            }
+
+            renderAll();
         }
 
-        function updateCounts() {
-            const all = getAllCombinedItems();
-            document.getElementById('count-all').textContent = all.length;
-            document.getElementById('count-home').textContent = all.filter(i => i.category === 'home').length;
-            document.getElementById('count-lab').textContent = all.filter(i => i.category === 'lab').length;
-            document.getElementById('count-bb').textContent = all.filter(i => i.category === 'builder_base').length;
+        // =====================================================================
+        // 5. SELECTORES DEL PASE DE ORO (0%, 10%, 15%, 20%)
+        // =====================================================================
+        function setVillageBoost(type, pct) {
+            const village = getActiveVillage();
+            if (!village) return;
+
+            if (type === "builder") {
+                village.builderBoost = pct;
+            } else {
+                village.researchBoost = pct;
+            }
+
+            if (village.autoRecalcOnBoostChange) {
+                recalculateVillageTimersForType(village, type, pct, false);
+            }
+
+            saveAppState();
+            renderAll();
+            showToast(
+                `Pase ${type === "builder" ? "de Constructor" : "de Investigación"}: ${pct}%`,
+                village.autoRecalcOnBoostChange
+                    ? `Timers activos ajustados al ${pct}% de descuento sin errores acumulados.`
+                    : `Se aplicará ${pct}% a las nuevas mejoras que añadas.`,
+                "info"
+            );
         }
 
+        function toggleAutoRecalcBoost(checked) {
+            const village = getActiveVillage();
+            if (!village) return;
+            village.autoRecalcOnBoostChange = checked;
+            saveAppState();
+        }
+
+        function recalculateAllActiveTimersNow() {
+            const village = getActiveVillage();
+            if (!village) return;
+            recalculateVillageTimersForType(village, "builder", village.builderBoost, true);
+            recalculateVillageTimersForType(village, "research", village.researchBoost, true);
+            saveAppState();
+            renderAll();
+            showToast(
+                "Timers Recalculados",
+                `Constructor (${village.builderBoost}%) e Investigación (${village.researchBoost}%) aplicados.`,
+                "success"
+            );
+        }
+
+        function recalculateVillageTimersForType(village, boostType, newPct, forceFromCurrent = false) {
+            const now = Date.now();
+            const leadSeconds = (appState.alertSettings.leadMinutes || 0) * 60;
+
+            village.timers.forEach(timer => {
+                const isBuilderGroup = timer.category === "builder" || timer.category === "builder_base";
+                const isResearchGroup = timer.category === "research" || timer.category === "pet";
+
+                if ((boostType === "builder" && !isBuilderGroup) || (boostType === "research" && !isResearchGroup)) {
+                    return;
+                }
+
+                const currentRem = getRemainingSeconds(timer);
+                if (currentRem <= 0) return;
+
+                // Recuperar tiempo base sin descuento previo para evitar errores compuestos
+                const prevFactor = Math.max(0.1, 1 - (timer.appliedBoostPct || 0) / 100);
+                const newFactor = Math.max(0.1, 1 - newPct / 100);
+
+                const unboostedRem = currentRem / prevFactor;
+                const newRem = Math.max(1, Math.round(unboostedRem * newFactor));
+
+                const unboostedTotal = (timer.totalSeconds || currentRem) / prevFactor;
+                const newTotal = Math.max(newRem, Math.round(unboostedTotal * newFactor));
+
+                timer.endTimeMs = now + newRem * 1000;
+                timer.totalSeconds = newTotal;
+                timer.appliedBoostPct = newPct;
+
+                // Si al recalcular vuelve a quedar fuera de ventana de alerta, rearmar bandera
+                if (newRem > leadSeconds) timer.preNotified = false;
+                if (newRem > 0) timer.doneNotified = false;
+            });
+        }
+
+        // =====================================================================
+        // 6. ANTICIPACIÓN DE NOTIFICACIÓN EN MINUTOS
+        // =====================================================================
+        function setLeadMinutes(val) {
+            let mins = parseInt(val, 10);
+            if (isNaN(mins) || mins < 0) mins = 0;
+            if (mins > 1440) mins = 1440;
+
+            appState.alertSettings.leadMinutes = mins;
+            const leadSeconds = mins * 60;
+
+            // Rearmar preNotified si el nuevo margen es menor al tiempo restante actual
+            appState.villages.forEach(v => {
+                v.timers.forEach(t => {
+                    const rem = getRemainingSeconds(t);
+                    if (rem > leadSeconds) {
+                        t.preNotified = false;
+                    }
+                });
+            });
+
+            saveAppState();
+            renderAll();
+        }
+
+        function toggleNotifyAtZero(checked) {
+            appState.alertSettings.notifyAtZero = checked;
+            saveAppState();
+            renderAll();
+        }
+
+        // =====================================================================
+        // 7. POCIONES RÁPIDAS Y GESTIÓN DE TIMERS
+        // =====================================================================
+        function applyPotionDiscount(type, hours) {
+            const village = getActiveVillage();
+            if (!village) return;
+
+            const discountMs = hours * 3600 * 1000;
+            let affected = 0;
+
+            village.timers.forEach(timer => {
+                const rem = getRemainingSeconds(timer);
+                if (rem <= 0) return;
+
+                // Poción del Constructor afecta edificios/héroes de Aldea Principal (category === 'builder')
+                if (type === "builder" && timer.category === "builder") {
+                    timer.endTimeMs = Math.max(Date.now(), timer.endTimeMs - discountMs);
+                    affected++;
+                }
+                // Poción de Investigación afecta Laboratorio (category === 'research')
+                if (type === "research" && timer.category === "research") {
+                    timer.endTimeMs = Math.max(Date.now(), timer.endTimeMs - discountMs);
+                    affected++;
+                }
+            });
+
+            saveAppState();
+            renderAll();
+
+            if (affected > 0) {
+                showToast(
+                    type === "builder" ? "Poción del Constructor (-9h)" : "Poción de Investigación (-23h)",
+                    `Se adelantaron ${hours} horas en ${affected} mejora(s) activa(s).`,
+                    "success"
+                );
+            } else {
+                showToast("Sin mejoras aplicables", "No hay mejoras activas de ese tipo en esta aldea.", "warning");
+            }
+        }
+
+        function deleteTimer(timerId) {
+            const village = getActiveVillage();
+            if (!village) return;
+            village.timers = village.timers.filter(t => t.id !== timerId);
+            saveAppState();
+            renderAll();
+        }
+
+        // =====================================================================
+        // 8. PARSEO DE JSON DE CLASH OF CLANS
+        // =====================================================================
+        function parseCocJsonToTimersAndHelpers(jsonObj, builderBoostPct, researchBoostPct) {
+            const now = Date.now();
+            const exportTs = jsonObj.timestamp || Math.floor(now / 1000);
+            const elapsedSinceExport = Math.max(0, Math.floor(now / 1000) - exportTs);
+
+            // Detectar si el JSON exportado es reciente (< 14 días); si es de prueba o futuro, usar timer directo
+            const useElapsedOffset = (Math.floor(now / 1000) >= exportTs) && (elapsedSinceExport < 14 * 86400);
+
+            const categoriesToScan = [
+                { key: "buildings", category: "builder", label: "Aldea Principal" },
+                { key: "traps", category: "builder", label: "Trampa (Aldea)" },
+                { key: "heroes", category: "builder", label: "Héroe (Aldea)" },
+                { key: "units", category: "research", label: "Laboratorio (Tropa)" },
+                { key: "spells", category: "research", label: "Laboratorio (Hechizo)" },
+                { key: "siege_machines", category: "research", label: "Laboratorio (Asedio)" },
+                { key: "pets", category: "pet", label: "Caseta de Mascotas" },
+                { key: "buildings2", category: "builder_base", label: "Base del Constructor" },
+                { key: "traps2", category: "builder_base", label: "Trampa (Constructor)" },
+                { key: "units2", category: "builder_base", label: "Lab. Estelar" },
+                { key: "heroes2", category: "builder_base", label: "Héroe (Constructor)" }
+            ];
+
+            // Obtener niveles de asistentes para etiquetar asignaciones
+            const helperLvlMap = {};
+            if (Array.isArray(jsonObj.helpers)) {
+                jsonObj.helpers.forEach(h => {
+                    helperLvlMap[h.data] = h.lvl || 1;
+                });
+            }
+
+            const rawExtracted = [];
+            const nameFrequency = {};
+
+            categoriesToScan.forEach(group => {
+                const arr = jsonObj[group.key];
+                if (!Array.isArray(arr)) return;
+
+                arr.forEach(item => {
+                    if (item.timer && item.timer > 0) {
+                        const info = COC_DICT[item.data] || { name: `Elemento #${item.data}`, icon: "fa-hammer" };
+                        nameFrequency[info.name] = (nameFrequency[info.name] || 0) + 1;
+
+                        const remSeconds = useElapsedOffset
+                            ? Math.max(0, item.timer - elapsedSinceExport)
+                            : item.timer;
+
+                        let helperLabel = null;
+                        if (item.helper_recurrent) {
+                            if (group.category === "research") {
+                                const hLvl = helperLvlMap[93000001] || 1;
+                                helperLabel = `Ayudante de Laboratorio (Nvl ${hLvl})`;
+                            } else {
+                                const hLvl = helperLvlMap[93000000] || 1;
+                                helperLabel = `Aprendiz de Constructor (Nvl ${hLvl})`;
+                            }
+                        }
+
+                        const appliedBoost = (group.category === "research" || group.category === "pet")
+                            ? researchBoostPct
+                            : builderBoostPct;
+
+                        rawExtracted.push({
+                            baseName: info.name,
+                            icon: info.icon,
+                            fromLvl: item.lvl || 1,
+                            toLvl: (item.lvl || 1) + 1,
+                            category: group.category,
+                            subLabel: group.label,
+                            totalSeconds: item.timer,
+                            remainingSeconds: remSeconds,
+                            appliedBoostPct: appliedBoost,
+                            helperAssigned: helperLabel
+                        });
+                    }
+                });
+            });
+
+            // Numerar duplicados (#1, #2...) si hay varios edificios iguales en mejora
+            const nameCounters = {};
+            const timers = rawExtracted.map((t, idx) => {
+                let finalName = t.baseName;
+                if (nameFrequency[t.baseName] > 1) {
+                    nameCounters[t.baseName] = (nameCounters[t.baseName] || 0) + 1;
+                    finalName = `${t.baseName} #${nameCounters[t.baseName]}`;
+                }
+
+                return {
+                    id: `t_${Date.now()}_${idx}`,
+                    name: finalName,
+                    icon: t.icon,
+                    fromLvl: t.fromLvl,
+                    toLvl: t.toLvl,
+                    category: t.category,
+                    subLabel: t.subLabel,
+                    totalSeconds: t.totalSeconds,
+                    endTimeMs: now + t.remainingSeconds * 1000,
+                    appliedBoostPct: t.appliedBoostPct,
+                    helperAssigned: t.helperAssigned,
+                    preNotified: false,
+                    doneNotified: false
+                };
+            });
+
+            const helpers = (jsonObj.helpers || []).map(h => {
+                const info = COC_DICT[h.data] || { name: `Asistente ${h.data}`, icon: "fa-user-astronaut", role: "Asistente" };
+                const cdSeconds = h.helper_cooldown
+                    ? (useElapsedOffset ? Math.max(0, h.helper_cooldown - elapsedSinceExport) : h.helper_cooldown)
+                    : 0;
+                return {
+                    id: h.data,
+                    name: info.name,
+                    lvl: h.lvl || 1,
+                    role: info.role || "Asistente de aldea",
+                    icon: info.icon,
+                    cooldownEndMs: now + cdSeconds * 1000
+                };
+            });
+
+            return {
+                tag: jsonObj.tag || null,
+                timers,
+                helpers
+            };
+        }
+
+        // =====================================================================
+        // 9. MODALES: JSON, NUEVA ALDEA, MANUAL TIMER, RENOMBRAR, ELIMINAR
+        // =====================================================================
+        function closeModal(id) {
+            document.getElementById(id).classList.add("hidden");
+        }
+
+        function openJsonModal() {
+            const village = getActiveVillage();
+            document.getElementById("json-target-village-name").textContent = `${village.name} (${village.tag || "Sin Tag"})`;
+            document.getElementById("json-update-input").value = "";
+            document.getElementById("json-update-error").classList.add("hidden");
+            document.getElementById("modal-json").classList.remove("hidden");
+        }
+
+        function applyJsonToCurrentVillage() {
+            const raw = document.getElementById("json-update-input").value.trim();
+            const errEl = document.getElementById("json-update-error");
+            try {
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== "object") throw new Error("El formato JSON no es válido.");
+
+                const village = getActiveVillage();
+                const extracted = parseCocJsonToTimersAndHelpers(parsed, village.builderBoost, village.researchBoost);
+
+                if (extracted.tag) village.tag = extracted.tag;
+                village.timers = extracted.timers;
+                village.helpers = extracted.helpers;
+
+                saveAppState();
+                renderAll();
+                closeModal("modal-json");
+                showToast("¡Aldea Actualizada!", `Se cargaron ${extracted.timers.length} mejoras activas.`, "success");
+            } catch (e) {
+                errEl.textContent = "Error al leer el JSON: " + e.message;
+                errEl.classList.remove("hidden");
+            }
+        }
+
+        function restoreDefaultVillage1() {
+            const idx = appState.villages.findIndex(v => v.id === appState.activeVillageId);
+            if (idx !== -1) {
+                appState.villages[idx] = createDefaultVillage1();
+                appState.activeVillageId = appState.villages[idx].id;
+                saveAppState();
+                renderAll();
+                closeModal("modal-json");
+                showToast("Aldea Restaurada", "Se restablecieron los datos originales de #Q8Y9PQRP8.", "success");
+            }
+        }
+
+        // Modal Nueva Aldea
+        function openNewVillageModal() {
+            document.getElementById("new-village-name").value = "";
+            document.getElementById("new-village-tag").value = "";
+            document.getElementById("new-village-json").value = "";
+            document.getElementById("new-village-b-boost").value = "0";
+            document.getElementById("new-village-r-boost").value = "0";
+            document.getElementById("new-village-error").classList.add("hidden");
+            switchNewVillageMode("json");
+            document.getElementById("modal-new-village").classList.remove("hidden");
+        }
+
+        function switchNewVillageMode(mode) {
+            newVillageMode = mode;
+            const btnJson = document.getElementById("new-v-tab-json");
+            const btnBlank = document.getElementById("new-v-tab-blank");
+            const jsonSec = document.getElementById("new-village-json-section");
+
+            if (mode === "json") {
+                btnJson.className = "py-1.5 rounded-lg text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer";
+                btnBlank.className = "py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer";
+                jsonSec.classList.remove("hidden");
+            } else {
+                btnBlank.className = "py-1.5 rounded-lg text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer";
+                btnJson.className = "py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer";
+                jsonSec.classList.add("hidden");
+            }
+        }
+
+        function createNewVillage() {
+            const errEl = document.getElementById("new-village-error");
+            errEl.classList.add("hidden");
+
+            const customName = document.getElementById("new-village-name").value.trim();
+            let customTag = document.getElementById("new-village-tag").value.trim();
+            const bBoost = parseInt(document.getElementById("new-village-b-boost").value, 10) || 0;
+            const rBoost = parseInt(document.getElementById("new-village-r-boost").value, 10) || 0;
+
+            let timers = [];
+            let helpers = [];
+
+            if (newVillageMode === "json") {
+                const rawJson = document.getElementById("new-village-json").value.trim();
+                if (!rawJson) {
+                    errEl.textContent = "Pega el JSON de tu aldea o cambia a 'Aldea Vacía / Manual'.";
+                    errEl.classList.remove("hidden");
+                    return;
+                }
+                try {
+                    const parsed = JSON.parse(rawJson);
+                    const extracted = parseCocJsonToTimersAndHelpers(parsed, bBoost, rBoost);
+                    timers = extracted.timers;
+                    helpers = extracted.helpers;
+                    if (!customTag && extracted.tag) customTag = extracted.tag;
+                } catch (e) {
+                    errEl.textContent = "JSON inválido: " + e.message;
+                    errEl.classList.remove("hidden");
+                    return;
+                }
+            }
+
+            if (customTag && !customTag.startsWith("#")) {
+                customTag = "#" + customTag.toUpperCase();
+            }
+
+            const newId = `village_${Date.now()}`;
+            const finalName = customName || `Aldea #${appState.villages.length + 1}`;
+
+            appState.villages.push({
+                id: newId,
+                name: finalName,
+                tag: customTag || "#SIN-TAG",
+                builderBoost: bBoost,
+                researchBoost: rBoost,
+                autoRecalcOnBoostChange: true,
+                timers,
+                helpers
+            });
+
+            appState.activeVillageId = newId;
+            saveAppState();
+            renderAll();
+            closeModal("modal-new-village");
+            showToast("¡Nueva Aldea Creada!", `Pestaña "${finalName}" añadida con ${timers.length} mejora(s).`, "success");
+        }
+
+        // Modal Añadir Mejora Manual
+        function openAddTimerModal() {
+            document.getElementById("manual-timer-name").value = "";
+            document.getElementById("manual-timer-lvl").value = "";
+            document.getElementById("manual-timer-cat").value = "builder";
+            document.getElementById("manual-timer-days").value = "1";
+            document.getElementById("manual-timer-hours").value = "0";
+            document.getElementById("manual-timer-mins").value = "0";
+            updateManualTimerPreview();
+            document.getElementById("modal-add-timer").classList.remove("hidden");
+        }
+
+        function getManualModalCalculatedSeconds() {
+            const village = getActiveVillage();
+            const cat = document.getElementById("manual-timer-cat").value;
+            const d = parseInt(document.getElementById("manual-timer-days").value, 10) || 0;
+            const h = parseInt(document.getElementById("manual-timer-hours").value, 10) || 0;
+            const m = parseInt(document.getElementById("manual-timer-mins").value, 10) || 0;
+
+            const baseSec = (d * 86400) + (h * 3600) + (m * 60);
+            const boostPct = (cat === "research" || cat === "pet") ? village.researchBoost : village.builderBoost;
+            const discountedSec = Math.round(baseSec * (1 - boostPct / 100));
+
+            return { baseSec, discountedSec, boostPct };
+        }
+
+        function updateManualTimerPreview() {
+            const { baseSec, discountedSec, boostPct } = getManualModalCalculatedSeconds();
+            const label = baseSec <= 0
+                ? "Ingresa una duración"
+                : boostPct > 0
+                    ? `${formatDuration(discountedSec)} (-${boostPct}% Pase)`
+                    : `${formatDuration(baseSec)} (Sin descuento)`;
+            document.getElementById("manual-preview-val").textContent = label;
+        }
+
+        function createManualTimer() {
+            const { discountedSec, boostPct } = getManualModalCalculatedSeconds();
+            if (discountedSec <= 0) {
+                showToast("Duración inválida", "Ingresa al menos 1 minuto para la mejora.", "warning");
+                return;
+            }
+
+            const village = getActiveVillage();
+            const name = document.getElementById("manual-timer-name").value.trim() || "Mejora Manual";
+            const toLvl = parseInt(document.getElementById("manual-timer-lvl").value, 10) || null;
+            const cat = document.getElementById("manual-timer-cat").value;
+
+            const catMeta = {
+                builder: { label: "Aldea Principal", icon: "fa-hammer" },
+                research: { label: "Laboratorio", icon: "fa-flask" },
+                pet: { label: "Caseta de Mascotas", icon: "fa-paw" },
+                builder_base: { label: "Base del Constructor", icon: "fa-gear" }
+            };
+
+            village.timers.push({
+                id: `manual_${Date.now()}`,
+                name,
+                icon: catMeta[cat].icon,
+                fromLvl: toLvl ? Math.max(1, toLvl - 1) : null,
+                toLvl: toLvl,
+                category: cat,
+                subLabel: catMeta[cat].label,
+                totalSeconds: discountedSec,
+                endTimeMs: Date.now() + discountedSec * 1000,
+                appliedBoostPct: boostPct,
+                helperAssigned: null,
+                preNotified: false,
+                doneNotified: false
+            });
+
+            saveAppState();
+            renderAll();
+            closeModal("modal-add-timer");
+            showToast("Mejora Añadida", `"${name}" iniciada (${formatDuration(discountedSec)}).`, "success");
+        }
+
+        // Modal Renombrar Aldea
+        function openRenameVillageModal() {
+            const village = getActiveVillage();
+            document.getElementById("rename-village-name").value = village.name;
+            document.getElementById("rename-village-tag").value = village.tag;
+            document.getElementById("modal-rename-village").classList.remove("hidden");
+        }
+
+        function saveRenameVillage() {
+            const village = getActiveVillage();
+            const newName = document.getElementById("rename-village-name").value.trim();
+            let newTag = document.getElementById("rename-village-tag").value.trim();
+            if (newName) village.name = newName;
+            if (newTag) {
+                if (!newTag.startsWith("#")) newTag = "#" + newTag.toUpperCase();
+                village.tag = newTag;
+            }
+            saveAppState();
+            renderAll();
+            closeModal("modal-rename-village");
+        }
+
+        // Modal Eliminar Aldea
+        function openDeleteVillageModal() {
+            if (appState.villages.length <= 1) return;
+            const village = getActiveVillage();
+            document.getElementById("delete-village-confirm-name").textContent = `${village.name} (${village.tag})`;
+            document.getElementById("modal-delete-village").classList.remove("hidden");
+        }
+
+        function confirmDeleteActiveVillage() {
+            if (appState.villages.length <= 1) return;
+            const removed = getActiveVillage();
+            appState.villages = appState.villages.filter(v => v.id !== removed.id);
+            appState.activeVillageId = appState.villages[0].id;
+            saveAppState();
+            renderAll();
+            closeModal("modal-delete-village");
+            showToast("Aldea Eliminada", `Se eliminó la pestaña "${removed.name}".`, "info");
+        }
+
+        function switchVillageTab(villageId) {
+            appState.activeVillageId = villageId;
+            saveAppState();
+            renderAll();
+        }
+
+        function setCategoryFilter(cat) {
+            activeCategoryFilter = cat;
+            renderAll();
+        }
+
+        // =====================================================================
+        // 10. RENDERIZADO COMPLETO DE LA INTERFAZ
+        // =====================================================================
         function renderAll() {
-            const allItems = getAllCombinedItems();
+            const village = getActiveVillage();
+            if (!village) return;
 
-            // Ordenar por el que termina más pronto primero
-            const sortedItems = [...allItems].sort((a, b) => getRemainingSeconds(a) - getRemainingSeconds(b));
+            renderVillageTabs();
+            renderActiveVillageHeader(village);
+            renderGoldPassPanel(village);
+            renderLeadTimePanel();
+            renderUpgradesAndKPIs(village);
+            renderHelpers(village);
+        }
 
-            // Actualizar KPIs
-            updateKPIs(sortedItems);
+        function renderVillageTabs() {
+            const container = document.getElementById("village-tabs-list");
+            const leadSeconds = (appState.alertSettings.leadMinutes || 0) * 60;
 
-            // Filtrar según pestaña activa
-            const filtered = activeFilter === 'all' 
-                ? sortedItems 
-                : sortedItems.filter(i => i.category === activeFilter);
+            container.innerHTML = appState.villages.map(v => {
+                const isActive = v.id === appState.activeVillageId;
+                const activeCount = v.timers.filter(t => getRemainingSeconds(t) > 0).length;
+                const hasAlertOrDone = v.timers.some(t => {
+                    const rem = getRemainingSeconds(t);
+                    return rem === 0 || (leadSeconds > 0 && rem <= leadSeconds);
+                });
 
-            const grid = document.getElementById('upgrades-grid');
+                const tabStyle = isActive
+                    ? "bg-coc-gold text-slate-950 border-coc-gold shadow-md font-extrabold"
+                    : hasAlertOrDone
+                        ? "bg-emerald-950/70 text-emerald-200 border-emerald-500/60 hover:bg-emerald-900/60 font-semibold"
+                        : "bg-slate-900/90 text-slate-300 border-coc-border hover:border-slate-500 font-semibold";
+
+                const badgeStyle = isActive
+                    ? "bg-slate-950/20 text-slate-950"
+                    : hasAlertOrDone
+                        ? "bg-emerald-500 text-slate-950 font-extrabold"
+                        : "bg-slate-800 text-slate-300";
+
+                return `
+                    <button onclick="switchVillageTab('${v.id}')" class="px-3 py-1.5 rounded-xl border text-xs flex items-center gap-2 whitespace-nowrap shrink-0 transition cursor-pointer ${tabStyle}">
+                        <span class="truncate max-w-[140px] sm:max-w-[190px]">${v.name}</span>
+                        <span class="px-1.5 py-0.5 rounded-md text-[10px] ${badgeStyle}">${activeCount}</span>
+                    </button>
+                `;
+            }).join("");
+        }
+
+        function renderActiveVillageHeader(village) {
+            document.getElementById("active-village-title").textContent = village.name;
+            document.getElementById("active-village-tag").textContent = village.tag || "#SIN-TAG";
+
+            const activeCount = village.timers.filter(t => getRemainingSeconds(t) > 0).length;
+            const doneCount = village.timers.filter(t => getRemainingSeconds(t) === 0).length;
+            document.getElementById("active-village-subtitle").textContent =
+                `${activeCount} en curso • ${doneCount} completada(s) • Pase: ${village.builderBoost}% Const. / ${village.researchBoost}% Inv.`;
+
+            const delBtn = document.getElementById("btn-delete-village");
+            delBtn.classList.toggle("hidden", appState.villages.length <= 1);
+        }
+
+        function renderGoldPassPanel(village) {
+            const levels = [0, 10, 15, 20];
+
+            document.getElementById("builder-boost-pills").innerHTML = levels.map(pct => {
+                const selected = village.builderBoost === pct;
+                const cls = selected
+                    ? "bg-amber-400 text-slate-950 font-extrabold border-amber-300 shadow"
+                    : "bg-slate-950 text-slate-300 border-coc-border hover:border-amber-400/50 font-semibold";
+                return `
+                    <button onclick="setVillageBoost('builder', ${pct})" class="py-1.5 rounded-lg border text-xs transition cursor-pointer ${cls}">
+                        ${pct}%
+                    </button>
+                `;
+            }).join("");
+
+            document.getElementById("research-boost-pills").innerHTML = levels.map(pct => {
+                const selected = village.researchBoost === pct;
+                const cls = selected
+                    ? "bg-fuchsia-500 text-white font-extrabold border-fuchsia-300 shadow"
+                    : "bg-slate-950 text-slate-300 border-coc-border hover:border-fuchsia-400/50 font-semibold";
+                return `
+                    <button onclick="setVillageBoost('research', ${pct})" class="py-1.5 rounded-lg border text-xs transition cursor-pointer ${cls}">
+                        ${pct}%
+                    </button>
+                `;
+            }).join("");
+
+            document.getElementById("toggle-auto-recalc").checked = Boolean(village.autoRecalcOnBoostChange);
+        }
+
+        function renderLeadTimePanel() {
+            const presets = [
+                { mins: 0, label: "0 min (Al terminar)" },
+                { mins: 5, label: "5 min" },
+                { mins: 10, label: "10 min" },
+                { mins: 15, label: "15 min" },
+                { mins: 30, label: "30 min" },
+                { mins: 60, label: "60 min" }
+            ];
+
+            const currentMins = appState.alertSettings.leadMinutes;
+            document.getElementById("lead-time-chips").innerHTML = presets.map(p => {
+                const isSelected = currentMins === p.mins;
+                const cls = isSelected
+                    ? "bg-emerald-500 text-slate-950 font-extrabold border-emerald-300 shadow"
+                    : "bg-slate-900 text-slate-300 border-coc-border hover:border-emerald-400/50 font-semibold";
+                return `
+                    <button onclick="setLeadMinutes(${p.mins})" class="px-2.5 py-1.5 rounded-xl border text-xs transition cursor-pointer ${cls}">
+                        ${p.label}
+                    </button>
+                `;
+            }).join("");
+
+            const inputEl = document.getElementById("custom-lead-minutes");
+            if (document.activeElement !== inputEl) {
+                inputEl.value = currentMins;
+            }
+            document.getElementById("toggle-notify-zero").checked = Boolean(appState.alertSettings.notifyAtZero);
+
+            document.getElementById("active-alert-summary").textContent = currentMins > 0
+                ? `Avisando ${currentMins} min antes`
+                : "Avisando al terminar (00:00:00)";
+        }
+
+        function renderUpgradesAndKPIs(village) {
+            const sorted = [...village.timers].sort((a, b) => getRemainingSeconds(a) - getRemainingSeconds(b));
+            const leadMins = appState.alertSettings.leadMinutes || 0;
+            const leadSeconds = leadMins * 60;
+
+            // Contadores por categoría
+            document.getElementById("count-all").textContent = sorted.length;
+            document.getElementById("count-builder").textContent = sorted.filter(t => t.category === "builder").length;
+            document.getElementById("count-research").textContent = sorted.filter(t => t.category === "research" || t.category === "pet").length;
+            document.getElementById("count-bb").textContent = sorted.filter(t => t.category === "builder_base").length;
+
+            // Actualizar estilos de botones de filtro
+            document.querySelectorAll(".cat-filter-btn").forEach(btn => {
+                const active = btn.dataset.cat === activeCategoryFilter;
+                btn.className = active
+                    ? "cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap"
+                    : "cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-card text-slate-300 border border-coc-border transition cursor-pointer whitespace-nowrap";
+            });
+
+            // KPIs
+            const activeTimers = sorted.filter(t => getRemainingSeconds(t) > 0);
+            const nextTimer = activeTimers[0];
+            if (nextTimer) {
+                document.getElementById("kpi-next-timer").textContent = formatDuration(getRemainingSeconds(nextTimer));
+                document.getElementById("kpi-next-name").textContent = nextTimer.toLvl
+                    ? `${nextTimer.name} (Nvl ${nextTimer.toLvl})`
+                    : nextTimer.name;
+            } else {
+                document.getElementById("kpi-next-timer").textContent = "¡Todo Listo!";
+                document.getElementById("kpi-next-name").textContent = "Sin mejoras pendientes";
+            }
+
+            const homeBuilders = activeTimers.filter(t => t.category === "builder").length;
+            const bbBuilders = activeTimers.filter(t => t.category === "builder_base").length;
+            document.getElementById("kpi-builders").textContent = `${homeBuilders + bbBuilders} Activos`;
+            document.getElementById("kpi-builders-sub").textContent = `${homeBuilders} Aldea • ${bbBuilders} Base Const.`;
+
+            const resTimers = activeTimers.filter(t => t.category === "research" || t.category === "pet");
+            if (resTimers.length > 0) {
+                document.getElementById("kpi-research").textContent = `${resTimers.length} Activa(s)`;
+                document.getElementById("kpi-research-sub").textContent = resTimers[0].name;
+            } else {
+                document.getElementById("kpi-research").textContent = "Libre";
+                document.getElementById("kpi-research-sub").textContent = "Sin investigación";
+            }
+
+            // Filtrar tarjetas
+            const filtered = sorted.filter(t => {
+                if (activeCategoryFilter === "all") return true;
+                if (activeCategoryFilter === "research") return t.category === "research" || t.category === "pet";
+                return t.category === activeCategoryFilter;
+            });
+
+            const grid = document.getElementById("upgrades-grid");
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full bg-coc-card border border-coc-border rounded-2xl p-8 text-center">
                         <i class="fa-solid fa-mug-hot text-3xl text-slate-500 mb-2"></i>
-                        <p class="text-slate-300 font-semibold">No hay mejoras activas en esta categoría</p>
-                        <p class="text-xs text-slate-500 mt-1">Tus constructores están descansando o puedes añadir un temporizador manual.</p>
+                        <p class="text-sm font-bold text-slate-300">No hay mejoras en esta categoría</p>
+                        <p class="text-xs text-slate-500 mt-1">Usa "+ Añadir Mejora Manual" o "Actualizar JSON" para agregar temporizadores.</p>
                     </div>
                 `;
-            } else {
-                grid.innerHTML = filtered.map(item => createUpgradeCardHTML(item)).join('');
-            }
-
-            renderHelpers();
-        }
-
-        function createUpgradeCardHTML(item) {
-            const remaining = getRemainingSeconds(item);
-            const isCompleted = remaining <= 0;
-            const totalBase = item.isCustom ? item.totalDuration : item.rawTimer;
-            const progressPct = isCompleted ? 100 : Math.min(99, Math.max(4, Math.round(((totalBase - remaining) / totalBase) * 100)));
-
-            // Colores por categoría
-            let badgeStyle = "bg-amber-500/15 text-amber-300 border-amber-500/30";
-            let barColor = "from-amber-400 to-amber-500";
-            let iconBg = "bg-amber-500/20 text-amber-400 border-amber-500/30";
-
-            if (item.category === 'lab') {
-                badgeStyle = "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30";
-                barColor = "from-fuchsia-500 to-purple-500";
-                iconBg = "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30";
-            } else if (item.category === 'builder_base') {
-                badgeStyle = "bg-sky-500/15 text-sky-300 border-sky-500/30";
-                barColor = "from-sky-400 to-blue-500";
-                iconBg = "bg-sky-500/20 text-sky-400 border-sky-500/30";
-            }
-
-            if (isCompleted) {
-                barColor = "from-emerald-400 to-emerald-500";
-            }
-
-            // Verificar notificación automática al llegar a 0
-            if (isCompleted && !notifiedIds.has(item.id)) {
-                notifiedIds.add(item.id);
-                triggerUpgradeFinishedAlert(item);
-            }
-
-            return `
-                <div class="bg-coc-card hover:bg-coc-cardHover border ${isCompleted ? 'border-emerald-400 completed-glow' : 'border-coc-border'} rounded-2xl p-4 flex flex-col justify-between transition shadow-lg relative">
-                    <div>
-                        <!-- Top Row: Category & Helper Badge -->
-                        <div class="flex items-center justify-between gap-2 mb-3">
-                            <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold border ${badgeStyle}">
-                                ${item.subLabel}
-                            </span>
-                            <div class="flex items-center gap-1.5">
-                                ${item.helperAssigned ? `
-                                    <span title="Asistente recurrente asignado" class="px-2 py-0.5 rounded-lg bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 text-[11px] font-semibold flex items-center gap-1">
-                                        <i class="fa-solid fa-user-astronaut text-[10px]"></i> Asistente
-                                    </span>
-                                ` : ''}
-                                ${item.isCustom ? `
-                                    <button onclick="deleteCustomTimer('${item.id}')" title="Eliminar temporizador" class="text-slate-500 hover:text-rose-400 text-xs px-1.5 cursor-pointer">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                ` : ''}
-                            </div>
-                        </div>
-
-                        <!-- Item Info -->
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-xl border ${iconBg} flex items-center justify-center text-xl shrink-0">
-                                <i class="fa-solid ${item.icon}"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <h3 class="font-bold text-white text-base truncate">${item.name}</h3>
-                                ${!item.isCustom ? `
-                                    <div class="flex items-center gap-1.5 mt-0.5 text-xs font-semibold">
-                                        <span class="text-slate-400">Nivel ${item.currentLvl}</span>
-                                        <i class="fa-solid fa-arrow-right text-[10px] text-coc-gold"></i>
-                                        <span class="text-coc-gold">Nivel ${item.targetLvl}</span>
-                                    </div>
-                                ` : `
-                                    <p class="text-xs text-slate-400 mt-0.5">Temporizador personalizado</p>
-                                `}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Countdown & Progress Bar -->
-                    <div class="mt-4 pt-3 border-t border-coc-border/60">
-                        <div class="flex items-baseline justify-between mb-1.5">
-                            <span class="clash-title text-lg sm:text-xl ${isCompleted ? 'text-emerald-400' : 'text-white'} tracking-wide">
-                                ${formatDuration(remaining)}
-                            </span>
-                            <span class="text-[11px] font-medium text-slate-400">
-                                ${formatCompletionDate(remaining)}
-                            </span>
-                        </div>
-                        <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-coc-border/80">
-                            <div class="h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500" style="width: ${progressPct}%"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function updateKPIs(sortedItems) {
-            const activeItems = sortedItems.filter(i => getRemainingSeconds(i) > 0);
-            const nextItem = activeItems[0];
-
-            if (nextItem) {
-                document.getElementById('kpi-next-timer').textContent = formatDuration(getRemainingSeconds(nextItem));
-                document.getElementById('kpi-next-name').textContent = `${nextItem.name} (Nvl ${nextItem.targetLvl})`;
-            } else {
-                document.getElementById('kpi-next-timer').textContent = "¡Todo Listo!";
-                document.getElementById('kpi-next-name').textContent = "Sin mejoras pendientes";
-            }
-
-            const homeCount = sortedItems.filter(i => i.category === 'home' && getRemainingSeconds(i) > 0).length;
-            document.getElementById('kpi-builders').textContent = `${homeCount} / 5 Activos`;
-
-            const labItem = sortedItems.find(i => i.category === 'lab' && getRemainingSeconds(i) > 0);
-            if (labItem) {
-                document.getElementById('kpi-lab').textContent = "Ocupado";
-                document.getElementById('kpi-lab-sub').textContent = `${labItem.name} Nvl ${labItem.targetLvl}`;
-            } else {
-                document.getElementById('kpi-lab').textContent = "Libre";
-                document.getElementById('kpi-lab-sub').textContent = "Listo para investigar";
-            }
-
-            const bbItems = sortedItems.filter(i => i.category === 'builder_base' && getRemainingSeconds(i) > 0);
-            document.getElementById('kpi-bb').textContent = `${bbItems.length} / 2 Activos`;
-            document.getElementById('kpi-bb-sub').textContent = bbItems[0] ? `${bbItems[0].name} Nvl ${bbItems[0].targetLvl}` : "Constructores libres";
-        }
-
-        function renderHelpers() {
-            const container = document.getElementById('helpers-grid');
-            if (!helpersList.length) {
-                container.innerHTML = `<p class="text-xs text-slate-400 col-span-full">No se encontraron asistentes en el JSON.</p>`;
                 return;
             }
 
-            const nowUnix = Math.floor(Date.now() / 1000);
+            grid.innerHTML = filtered.map(timer => {
+                const rem = getRemainingSeconds(timer);
+                const isCompleted = rem === 0;
+                const isPreAlert = !isCompleted && leadSeconds > 0 && rem <= leadSeconds;
 
-            container.innerHTML = helpersList.map(helper => {
-                let cdRemaining = 0;
-                if (helper.cooldown > 0) {
-                    if (timeMode === 'live') {
-                        cdRemaining = Math.max(0, (helper.exportTimestamp + helper.cooldown) - nowUnix);
-                    } else {
-                        cdRemaining = Math.max(0, helper.cooldown - (nowUnix - appLoadUnix));
-                    }
+                const total = Math.max(1, timer.totalSeconds || rem);
+                const pct = isCompleted ? 100 : Math.min(99, Math.max(4, Math.round(((total - rem) / total) * 100)));
+
+                // Colores por categoría
+                let badgeCls = "bg-amber-500/15 text-amber-300 border-amber-500/30";
+                let iconCls = "bg-amber-500/20 text-amber-400 border-amber-500/30";
+                let barCls = "from-amber-400 to-amber-500";
+
+                if (timer.category === "research" || timer.category === "pet") {
+                    badgeCls = "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30";
+                    iconCls = "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30";
+                    barCls = "from-fuchsia-500 to-purple-500";
+                } else if (timer.category === "builder_base") {
+                    badgeCls = "bg-sky-500/15 text-sky-300 border-sky-500/30";
+                    iconCls = "bg-sky-500/20 text-sky-400 border-sky-500/30";
+                    barCls = "from-sky-400 to-blue-500";
                 }
 
-                const isReady = cdRemaining <= 0;
+                let cardBorder = "border-coc-border";
+                if (isCompleted) {
+                    cardBorder = "border-emerald-400 glow-completed";
+                    barCls = "from-emerald-400 to-emerald-500";
+                } else if (isPreAlert) {
+                    cardBorder = "border-amber-400 glow-prealert";
+                }
+
+                // Horarios exactos de pre-aviso y fin
+                const preAlertTimeMs = timer.endTimeMs - leadSeconds * 1000;
+                const preAlertText = leadMins > 0
+                    ? (isPreAlert || isCompleted ? "Aviso ya enviado" : `Aviso: ${formatClockTime(preAlertTimeMs)}`)
+                    : "Aviso: Al terminar";
+                const finishText = isCompleted ? "Listo para recoger" : `Fin: ${formatClockTime(timer.endTimeMs)}`;
+
+                return `
+                    <div class="bg-coc-card hover:bg-coc-cardHover border ${cardBorder} rounded-2xl p-4 flex flex-col justify-between transition shadow-lg">
+                        <div>
+                            <!-- Fila Superior: Categoría, Pase aplicado y Eliminar -->
+                            <div class="flex items-center justify-between gap-2 mb-2.5">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeCls}">
+                                        ${timer.subLabel}
+                                    </span>
+                                    ${timer.appliedBoostPct > 0 ? `
+                                        <span class="px-1.5 py-0.5 rounded-md bg-amber-400/15 border border-amber-400/40 text-coc-gold text-[10px] font-bold">
+                                            -${timer.appliedBoostPct}% Pase
+                                        </span>
+                                    ` : ""}
+                                </div>
+                                <button onclick="deleteTimer('${timer.id}')" title="Quitar temporizador" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+
+                            <!-- Banner de Estado Especial (Por terminar / Completado) -->
+                            ${isCompleted ? `
+                                <div class="mb-2.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-[11px] font-extrabold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>¡Completado! Constructor/Lab libre</span>
+                                </div>
+                            ` : isPreAlert ? `
+                                <div class="mb-2.5 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 text-[11px] font-extrabold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-bell"></i>
+                                    <span>¡Por terminar! Faltan menos de ${leadMins} min</span>
+                                </div>
+                            ` : ""}
+
+                            <!-- Info del Edificio / Tropa -->
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-xl border ${iconCls} flex items-center justify-center text-lg shrink-0">
+                                    <i class="fa-solid ${timer.icon}"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="font-bold text-white text-sm sm:text-base truncate">${timer.name}</h4>
+                                    ${timer.toLvl ? `
+                                        <div class="flex items-center gap-1.5 text-xs font-semibold mt-0.5">
+                                            <span class="text-slate-400">Nvl ${timer.fromLvl}</span>
+                                            <i class="fa-solid fa-arrow-right text-[10px] text-coc-gold"></i>
+                                            <span class="text-coc-gold">Nvl ${timer.toLvl}</span>
+                                        </div>
+                                    ` : `<p class="text-xs text-slate-400 mt-0.5">Temporizador personalizado</p>`}
+                                    ${timer.helperAssigned ? `
+                                        <p class="text-[11px] text-indigo-300 font-semibold mt-1 flex items-center gap-1 truncate">
+                                            <i class="fa-solid fa-user-astronaut text-[10px]"></i>
+                                            <span>${timer.helperAssigned}</span>
+                                        </p>
+                                    ` : ""}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cuenta atrás, Horas exactas y Barra de progreso -->
+                        <div class="mt-3.5 pt-3 border-t border-coc-border/60 space-y-2">
+                            <div class="flex items-baseline justify-between gap-2">
+                                <span class="clash-title text-lg sm:text-xl ${isCompleted ? "text-emerald-400" : isPreAlert ? "text-amber-300" : "text-white"}">
+                                    ${formatDuration(rem)}
+                                </span>
+                                <span class="text-[11px] font-semibold text-slate-300">${finishText}</span>
+                            </div>
+
+                            <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-coc-border/80">
+                                <div class="h-full rounded-full bg-gradient-to-r ${barCls} transition-all duration-500" style="width: ${pct}%"></div>
+                            </div>
+
+                            <div class="flex items-center justify-between text-[11px] text-slate-400">
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-regular fa-bell text-emerald-400"></i>
+                                    <span>${preAlertText}</span>
+                                </span>
+                                <span>${pct}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderHelpers(village) {
+            const container = document.getElementById("helpers-grid");
+            if (!village.helpers || village.helpers.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 col-span-full">No hay asistentes registrados en esta aldea.</p>`;
+                return;
+            }
+
+            const now = Date.now();
+            container.innerHTML = village.helpers.map(h => {
+                const cdRem = Math.max(0, Math.ceil(((h.cooldownEndMs || 0) - now) / 1000));
+                const isReady = cdRem === 0;
 
                 return `
                     <div class="bg-slate-900/80 border border-coc-border rounded-xl p-3 flex items-center gap-3">
                         <div class="w-10 h-10 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shrink-0">
-                            <i class="fa-solid ${helper.icon}"></i>
+                            <i class="fa-solid ${h.icon}"></i>
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center justify-between gap-1">
-                                <p class="text-xs font-bold text-white truncate">${helper.name}</p>
-                                <span class="px-1.5 py-0.5 rounded bg-slate-800 text-coc-gold text-[10px] font-bold">Nvl ${helper.lvl}</span>
+                                <p class="text-xs font-bold text-white truncate">${h.name}</p>
+                                <span class="px-1.5 py-0.5 rounded bg-slate-800 text-coc-gold text-[10px] font-bold">Nvl ${h.lvl}</span>
                             </div>
-                            <p class="text-[11px] text-slate-400 truncate">${helper.role}</p>
+                            <p class="text-[11px] text-slate-400 truncate">${h.role}</p>
                             <div class="mt-1">
-                                ${isReady 
+                                ${isReady
                                     ? `<span class="text-[11px] font-bold text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i>Disponible ahora</span>`
-                                    : `<span class="text-[11px] font-semibold text-amber-300"><i class="fa-solid fa-hourglass-half mr-1"></i>Listo en ${formatDuration(cdRemaining)}</span>`
+                                    : `<span class="text-[11px] font-semibold text-amber-300"><i class="fa-solid fa-hourglass-half mr-1"></i>Listo en ${formatDuration(cdRem)}</span>`
                                 }
                             </div>
                         </div>
                     </div>
                 `;
-            }).join('');
+            }).join("");
         }
 
-        function renderVillageSummary() {
-            if (!villageData) return;
-            const th = (villageData.buildings || []).find(b => b.data === 1000001);
-            const thLvl = th ? (th.timer ? `${th.lvl} → ${th.lvl + 1}` : th.lvl) : "?";
-            const heroesCount = (villageData.heroes || []).length;
-            const petsCount = (villageData.pets || []).length;
-            const unitsCount = (villageData.units || []).length;
-            const spellsCount = (villageData.spells || []).length;
-            const equipCount = (villageData.equipment || []).length;
-
-            const stats = [
-                { label: "Ayuntamiento", val: `TH ${thLvl}`, icon: "fa-chess-rook", color: "text-coc-gold" },
-                { label: "Héroes Aldea", val: heroesCount, icon: "fa-crown", color: "text-amber-400" },
-                { label: "Mascotas", val: petsCount, icon: "fa-paw", color: "text-emerald-400" },
-                { label: "Tropas Desbloq.", val: unitsCount, icon: "fa-khanda", color: "text-sky-400" },
-                { label: "Hechizos", val: spellsCount, icon: "fa-hat-wizard", color: "text-fuchsia-400" },
-                { label: "Equipamientos", val: equipCount, icon: "fa-shield-halved", color: "text-indigo-400" }
-            ];
-
-            document.getElementById('village-summary').innerHTML = stats.map(s => `
-                <div class="bg-slate-900/70 border border-coc-border rounded-xl p-3">
-                    <i class="fa-solid ${s.icon} ${s.color} text-base mb-1"></i>
-                    <p class="clash-title text-base sm:text-lg text-white">${s.val}</p>
-                    <p class="text-[11px] text-slate-400">${s.label}</p>
-                </div>
-            `).join('');
-        }
-
-        // ==========================================
-        // 8. CONTROLES DE UI, FILTROS Y POCIONES
-        // ==========================================
-        function startTicker() {
-            setInterval(() => {
-                renderAll();
-            }, 1000);
-        }
-
-        function setTimeMode(mode) {
-            timeMode = mode;
-            const btnLive = document.getElementById('mode-live');
-            const btnRaw = document.getElementById('mode-raw');
-
-            if (mode === 'live') {
-                btnLive.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-coc-gold text-slate-950 shadow";
-                btnRaw.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
-            } else {
-                btnRaw.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-coc-gold text-slate-950 shadow";
-                btnLive.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
-            }
-            notifiedIds.clear();
-            renderAll();
-        }
-
-        function setFilter(filter) {
-            activeFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.dataset.filter === filter) {
-                    btn.className = "filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap";
-                } else {
-                    btn.className = "filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-card text-slate-300 border border-coc-border hover:border-amber-400/50 transition cursor-pointer whitespace-nowrap";
-                }
-            });
-            renderAll();
-        }
-
-        function togglePotion(type) {
-            if (type === 'builder') {
-                builderPotionActive = !builderPotionActive;
-                const btn = document.getElementById('btn-builder-potion');
-                btn.classList.toggle('ring-2', builderPotionActive);
-                btn.classList.toggle('ring-sky-400', builderPotionActive);
-                btn.classList.toggle('bg-sky-500/30', builderPotionActive);
-                showToast(
-                    builderPotionActive ? "Poción del Constructor Activada" : "Poción del Constructor Desactivada",
-                    builderPotionActive ? "Simulando -9 horas en edificios de la Aldea Principal." : "Mostrando tiempos reales sin poción.",
-                    "info"
-                );
-            } else if (type === 'lab') {
-                labPotionActive = !labPotionActive;
-                const btn = document.getElementById('btn-lab-potion');
-                btn.classList.toggle('ring-2', labPotionActive);
-                btn.classList.toggle('ring-fuchsia-400', labPotionActive);
-                btn.classList.toggle('bg-fuchsia-500/30', labPotionActive);
-                showToast(
-                    labPotionActive ? "Poción de Investigación Activada" : "Poción de Investigación Desactivada",
-                    labPotionActive ? "Simulando -23 horas en el Laboratorio." : "Mostrando tiempos reales sin poción.",
-                    "info"
-                );
-            }
-            renderAll();
-        }
-
-        // ==========================================
-        // 9. MODALES: JSON Y TEMPORIZADORES MANUALES
-        // ==========================================
-        function toggleJsonModal(show) {
-            const modal = document.getElementById('json-modal');
-            document.getElementById('json-error').classList.add('hidden');
-            modal.classList.toggle('hidden', !show);
-        }
-
-        function importNewJson() {
-            const raw = document.getElementById('json-input').value.trim();
-            const errBox = document.getElementById('json-error');
-            try {
-                const parsed = JSON.parse(raw);
-                if (!parsed || typeof parsed !== 'object') {
-                    throw new Error("El formato JSON no es válido.");
-                }
-                villageData = parsed;
-                appLoadUnix = Math.floor(Date.now() / 1000);
-                notifiedIds.clear();
-
-                localStorage.setItem('coc_tracker_json', JSON.stringify(villageData));
-                localStorage.setItem('coc_tracker_load_unix', appLoadUnix.toString());
-
-                parseVillageData();
-                toggleJsonModal(false);
-                showToast("¡Aldea Actualizada!", `Se cargaron ${activeUpgrades.length} mejoras activas para ${villageData.tag || 'tu aldea'}.`, "success");
-            } catch (err) {
-                errBox.textContent = "Error al leer JSON: " + err.message;
-                errBox.classList.remove('hidden');
-            }
-        }
-
-        function resetToDefaultJson() {
-            document.getElementById('json-input').value = JSON.stringify(DEFAULT_USER_JSON, null, 2);
-            importNewJson();
-        }
-
-        function toggleCustomTimerModal(show) {
-            document.getElementById('custom-timer-modal').classList.toggle('hidden', !show);
-        }
-
-        function addCustomTimer() {
-            const name = document.getElementById('custom-name').value.trim() || "Mejora Personalizada";
-            const category = document.getElementById('custom-category').value;
-            const days = parseInt(document.getElementById('custom-days').value, 10) || 0;
-            const hours = parseInt(document.getElementById('custom-hours').value, 10) || 0;
-            const mins = parseInt(document.getElementById('custom-mins').value, 10) || 0;
-
-            const totalSeconds = (days * 86400) + (hours * 3600) + (mins * 60);
-            if (totalSeconds <= 0) {
-                showToast("Tiempo inválido", "Ingresa al menos 1 minuto para el temporizador.", "warning");
-                return;
-            }
-
-            const labelMap = {
-                home: "Aldea Principal (Manual)",
-                lab: "Laboratorio (Manual)",
-                builder_base: "Base Constructor (Manual)"
-            };
-
-            const newTimer = {
-                id: `custom_${Date.now()}`,
-                name: name,
-                icon: "fa-stopwatch",
-                category: category,
-                subLabel: labelMap[category],
-                totalDuration: totalSeconds,
-                targetUnix: Math.floor(Date.now() / 1000) + totalSeconds,
-                isCustom: true
-            };
-
-            customTimers.push(newTimer);
-            localStorage.setItem('coc_tracker_custom', JSON.stringify(customTimers));
-            updateCounts();
-            renderAll();
-            toggleCustomTimerModal(false);
-            document.getElementById('custom-name').value = "";
-            showToast("Temporizador Creado", `Te avisaremos cuando "${name}" finalice.`, "success");
-        }
-
-        function deleteCustomTimer(id) {
-            customTimers = customTimers.filter(t => t.id !== id);
-            localStorage.setItem('coc_tracker_custom', JSON.stringify(customTimers));
-            updateCounts();
-            renderAll();
-        }
-
-        // ==========================================
-        // 10. SISTEMA DE NOTIFICACIONES PUSH Y SONIDO CLASH
-        // ==========================================
+        // =====================================================================
+        // 11. SISTEMA DE NOTIFICACIONES PUSH Y SONIDO WEB AUDIO API
+        // =====================================================================
         function updateNotificationButtonUI() {
-            const btnText = document.getElementById('notify-btn-text');
+            const btnText = document.getElementById("notify-btn-text");
             if (!("Notification" in window)) {
-                btnText.textContent = "Sin Soporte Push";
+                btnText.textContent = "Sin Push";
                 return;
             }
             if (Notification.permission === "granted") {
                 btnText.textContent = "Alertas Activas";
             } else if (Notification.permission === "denied") {
-                btnText.textContent = "Alertas Bloqueadas";
+                btnText.textContent = "Bloqueadas";
             } else {
                 btnText.textContent = "Activar Alertas";
             }
@@ -1129,110 +1862,117 @@
 
         function requestNotificationPermission() {
             if (!("Notification" in window)) {
-                showToast("No soportado", "Tu navegador no soporta notificaciones de escritorio.", "warning");
+                showToast("No soportado", "Este navegador no admite notificaciones push.", "warning");
                 return;
             }
-            Notification.requestPermission().then(permission => {
+            Notification.requestPermission().then(perm => {
                 updateNotificationButtonUI();
-                if (permission === "granted") {
+                if (perm === "granted") {
                     playClashChime();
-                    showToast("¡Notificaciones Activadas!", "Recibirás un aviso sonoro y visual cuando termine una mejora.", "success");
-                    new Notification("Notificador CoC Activado", {
-                        body: "¡Listo! Te avisaremos cuando tus constructores terminen."
-                    });
+                    showToast("¡Alertas Activadas!", "Recibirás notificaciones sonoras y visuales según tu anticipación.", "success");
+                    try {
+                        new Notification("Notificador CoC Activado", {
+                            body: `Te avisaremos ${appState.alertSettings.leadMinutes} min antes de que terminen tus mejoras.`
+                        });
+                    } catch (e) {}
                 } else {
-                    showToast("Permiso Denegado", "Activa las notificaciones en la configuración de tu navegador para recibir alertas.", "warning");
+                    showToast("Permiso denegado", "Activa las notificaciones en los ajustes de tu navegador.", "warning");
                 }
             });
         }
 
-        function triggerUpgradeFinishedAlert(item) {
+        function fireTimerNotification(village, timer, stage, remainingSec) {
             playClashChime();
-            const title = `¡Mejora Completada! (${item.name})`;
-            const body = item.isCustom 
-                ? `Tu temporizador "${item.name}" ha finalizado.`
-                : `${item.name} alcanzó el Nivel ${item.targetLvl}. ¡Constructor libre!`;
+            const minsLeft = Math.ceil(remainingSec / 60);
+            const title = stage === "prealert"
+                ? `⏳ ¡Faltan ${minsLeft} min! (${village.name})`
+                : `✅ ¡Mejora Completada! (${village.name})`;
 
-            showToast(title, body, "success");
+            const body = stage === "prealert"
+                ? `${timer.name}${timer.toLvl ? ` (Nvl ${timer.toLvl})` : ""} terminará en ${minsLeft} minuto(s).`
+                : `${timer.name}${timer.toLvl ? ` alcanzó el Nivel ${timer.toLvl}` : " ha finalizado"}. ¡Constructor libre!`;
+
+            showToast(title, body, stage === "prealert" ? "warning" : "success");
 
             if ("Notification" in window && Notification.permission === "granted") {
                 try {
                     new Notification(title, { body });
-                } catch (e) {
-                    console.warn("Error enviando notificación nativa:", e);
-                }
+                } catch (e) {}
             }
         }
 
         function testNotification() {
             playClashChime();
-            showToast("¡Prueba de Alerta CoC!", "Así sonará y se verá el aviso cuando termine una mejora.", "success");
+            const mins = appState.alertSettings.leadMinutes;
+            showToast(
+                "🔔 Prueba de Alerta CoC",
+                mins > 0
+                    ? `Así sonará tu aviso cuando falten ${mins} minutos para terminar una mejora.`
+                    : "Así sonará tu aviso al completarse una mejora.",
+                "success"
+            );
+
             if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("Notificador CoC - Prueba", {
-                    body: "¡Un constructor ha terminado su trabajo en la aldea!"
-                });
+                try {
+                    new Notification("Notificador CoC - Prueba", {
+                        body: "¡Alerta funcionando correctamente en tu dispositivo!"
+                    });
+                } catch (e) {}
             }
         }
 
-        // Sonido estilo fanfarria / campana épica con Web Audio API
         function playClashChime() {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
                 const ctx = new AudioCtx();
-                const notes = [523.25, 659.25, 783.99, 1046.50]; // Do5, Mi5, Sol5, Do6
-                notes.forEach((freq, idx) => {
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // Acorde Do Mayor ascendente
+                notes.forEach((freq, i) => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.11);
+                    osc.type = "triangle";
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
 
-                    gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.11);
-                    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + idx * 0.11 + 0.03);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.11 + 0.45);
+                    gain.gain.setValueAtTime(0.001, ctx.currentTime + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + i * 0.1 + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.42);
 
                     osc.connect(gain);
                     gain.connect(ctx.destination);
-                    osc.start(ctx.currentTime + idx * 0.11);
-                    osc.stop(ctx.currentTime + idx * 0.11 + 0.5);
+                    osc.start(ctx.currentTime + i * 0.1);
+                    osc.stop(ctx.currentTime + i * 0.1 + 0.45);
                 });
-            } catch (e) {
-                console.warn("AudioContext bloqueado hasta interacción:", e);
-            }
+            } catch (e) {}
         }
 
-        // Toast visual en pantalla
         function showToast(title, message, type = "info") {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const borderColors = {
-                success: "border-emerald-400 bg-slate-900/95",
-                warning: "border-amber-400 bg-slate-900/95",
-                info: "border-sky-400 bg-slate-900/95"
-            };
-            const iconColors = {
-                success: "fa-circle-check text-emerald-400",
-                warning: "fa-triangle-exclamation text-amber-400",
-                info: "fa-bell text-coc-gold"
-            };
+            const container = document.getElementById("toast-container");
+            const el = document.createElement("div");
 
-            toast.className = `pointer-events-auto border-l-4 ${borderColors[type] || borderColors.info} rounded-xl p-3.5 shadow-2xl backdrop-blur-md flex items-start gap-3 transition-all duration-300 transform translate-x-0`;
-            toast.innerHTML = `
-                <i class="fa-solid ${iconColors[type] || iconColors.info} text-lg mt-0.5"></i>
+            const styles = {
+                success: { border: "border-emerald-400", icon: "fa-circle-check text-emerald-400" },
+                warning: { border: "border-amber-400", icon: "fa-bell text-amber-400" },
+                info: { border: "border-sky-400", icon: "fa-circle-info text-sky-400" }
+            };
+            const st = styles[type] || styles.info;
+
+            el.className = `pointer-events-auto border-l-4 ${st.border} bg-slate-900/95 rounded-xl p-3.5 shadow-2xl backdrop-blur-md flex items-start gap-3 transition-all duration-300`;
+            el.innerHTML = `
+                <i class="fa-solid ${st.icon} text-base mt-0.5"></i>
                 <div class="flex-1 min-w-0">
-                    <p class="font-bold text-xs sm:text-sm text-white">${title}</p>
-                    <p class="text-xs text-slate-300 mt-0.5">${message}</p>
+                    <p class="font-bold text-xs text-white">${title}</p>
+                    <p class="text-[11px] text-slate-300 mt-0.5 leading-snug">${message}</p>
                 </div>
                 <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-white text-xs cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             `;
 
-            container.appendChild(toast);
+            container.appendChild(el);
             setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(20px)';
-                setTimeout(() => toast.remove(), 300);
-            }, 5500);
+                el.style.opacity = "0";
+                el.style.transform = "translateX(16px)";
+                setTimeout(() => el.remove(), 300);
+            }, 5000);
         }
     </script>
 </body>
