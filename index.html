@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificador de Mejoras CoC | #Q8Y9PQRP8</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lilita+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        clash: ['"Lilita One"', 'cursive', 'sans-serif'],
+                    },
+                    colors: {
+                        coc: {
+                            bg: '#0f1219',
+                            card: '#181e2c',
+                            cardHover: '#1f273a',
+                            gold: '#f5b027',
+                            goldDark: '#b87a08',
+                            elixir: '#e040fb',
+                            darkElixir: '#7c4dff',
+                            builder: '#38bdf8',
+                            green: '#4ade80',
+                            border: '#2c364f'
+                        }
+                    },
+                    boxShadow: {
+                        'coc-gold': '0 4px 0 #9a6300, 0 8px 16px rgba(0,0,0,0.5)',
+                        'coc-blue': '0 4px 0 #0284c7, 0 8px 16px rgba(0,0,0,0.4)',
+                        'coc-purple': '0 4px 0 #86198f, 0 8px 16px rgba(0,0,0,0.4)',
+                        'coc-green': '0 4px 0 #15803d, 0 8px 16px rgba(0,0,0,0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f1219;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(245, 176, 39, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(224, 64, 251, 0.06) 0%, transparent 40%);
+            color: #f1f5f9;
+        }
+        .clash-title {
+            font-family: 'Lilita One', cursive, sans-serif;
+            letter-spacing: 0.03em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+        .btn-coc {
+            transition: all 0.12s ease;
+        }
+        .btn-coc:active {
+            transform: translateY(3px);
+            box-shadow: none !important;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f1219;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2c364f;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f5b027;
+        }
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(74, 222, 128, 0.9); box-shadow: 0 0 15px rgba(74, 222, 128, 0.3); }
+            50% { border-color: rgba(74, 222, 128, 0.3); box-shadow: 0 0 5px rgba(74, 222, 128, 0.1); }
+        }
+        .completed-glow {
+            animation: pulse-border 2s infinite;
+        }
+    </style>
+    <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+</script>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-coc-gold selection:text-black">
+
+    <!-- Toast / In-App Notification Banner -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-coc-card/90 backdrop-blur-md border-b border-coc-border shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-inner border-2 border-amber-200 text-slate-950 text-xl sm:text-2xl">
+                    <i class="fa-solid fa-hammer"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="clash-title text-xl sm:text-2xl text-coc-gold tracking-wide">Notificador CoC</h1>
+                        <span id="player-tag-badge" class="px-2.5 py-0.5 rounded-lg bg-slate-800 border border-coc-gold/40 text-coc-gold font-mono text-xs sm:text-sm font-bold">
+                            #Q8Y9PQRP8
+                        </span>
+                    </div>
+                    <p id="export-date-label" class="text-xs text-slate-400 mt-0.5">
+                        Cargando datos de exportación...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <button id="btn-notify-perm" onclick="requestNotificationPermission()" class="btn-coc px-3 py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 font-bold text-xs sm:text-sm shadow-coc-green flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notify-btn-text">Activar Alertas</span>
+                </button>
+
+                <button onclick="testNotification()" title="Probar sonido y notificación" class="btn-coc px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-coc-border text-slate-200 font-semibold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-volume-high text-coc-gold"></i>
+                    <span class="hidden sm:inline">Probar Alerta</span>
+                </button>
+
+                <button onclick="toggleJsonModal(true)" class="btn-coc px-3.5 py-2 rounded-xl bg-gradient-to-b from-amber-400 to-amber-600 text-slate-950 font-bold text-xs sm:text-sm shadow-coc-gold flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-file-code"></i>
+                    <span>Actualizar JSON</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 space-y-6">
+
+        <!-- Time Mode & Potion Simulator Bar -->
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-md">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="flex items-center gap-2 text-sm font-semibold text-slate-300">
+                    <i class="fa-solid fa-clock text-coc-gold"></i>
+                    <span>Cálculo de Tiempo:</span>
+                </div>
+                <div class="inline-flex rounded-xl bg-slate-900 p-1 border border-coc-border w-fit">
+                    <button id="mode-live" onclick="setTimeMode('live')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-coc-gold text-slate-950 shadow">
+                        En Vivo (Desde Exportación)
+                    </button>
+                    <button id="mode-raw" onclick="setTimeMode('raw')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+                        Tiempo Crudo JSON
+                    </button>
+                </div>
+            </div>
+
+            <!-- Potion Simulators & Custom Timer -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <button id="btn-builder-potion" onclick="togglePotion('builder')" class="px-3 py-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+                    <i class="fa-solid fa-flask"></i>
+                    <span>Poción Constructor (-9h)</span>
+                </button>
+                <button id="btn-lab-potion" onclick="togglePotion('lab')" class="px-3 py-1.5 rounded-xl border border-fuchsia-500/40 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+                    <i class="fa-solid fa-vial"></i>
+                    <span>Poción Investigación (-23h)</span>
+                </button>
+                <button onclick="toggleCustomTimerModal(true)" class="px-3 py-1.5 rounded-xl border border-coc-border bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+                    <i class="fa-solid fa-plus text-coc-gold"></i>
+                    <span>Temporizador Manual</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- KPI Summary Cards -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <!-- Next Upgrade Finishing -->
+            <div class="bg-coc-card border border-coc-gold/40 rounded-2xl p-4 relative overflow-hidden">
+                <div class="absolute -right-3 -bottom-3 text-coc-gold/10 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Próxima en Terminar</p>
+                <p id="kpi-next-timer" class="clash-title text-xl sm:text-2xl text-coc-gold mt-1">--:--:--</p>
+                <p id="kpi-next-name" class="text-xs text-slate-300 truncate mt-1">Calculando...</p>
+            </div>
+
+            <!-- Home Village Builders -->
+            <div class="bg-coc-card border border-coc-border rounded-2xl p-4 relative overflow-hidden">
+                <div class="absolute -right-3 -bottom-3 text-amber-500/10 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-hammer"></i>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Constructores Aldea</p>
+                <p id="kpi-builders" class="clash-title text-xl sm:text-2xl text-white mt-1">0 Activos</p>
+                <p class="text-xs text-amber-400 mt-1">Aldea Principal (TH17)</p>
+            </div>
+
+            <!-- Laboratory -->
+            <div class="bg-coc-card border border-coc-border rounded-2xl p-4 relative overflow-hidden">
+                <div class="absolute -right-3 -bottom-3 text-fuchsia-500/10 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-flask-vial"></i>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Laboratorio</p>
+                <p id="kpi-lab" class="clash-title text-xl sm:text-2xl text-fuchsia-400 mt-1">Inactivo</p>
+                <p id="kpi-lab-sub" class="text-xs text-slate-400 truncate mt-1">Sin investigación</p>
+            </div>
+
+            <!-- Builder Base -->
+            <div class="bg-coc-card border border-coc-border rounded-2xl p-4 relative overflow-hidden">
+                <div class="absolute -right-3 -bottom-3 text-sky-500/10 text-6xl pointer-events-none">
+                    <i class="fa-solid fa-wrench"></i>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Base del Constructor</p>
+                <p id="kpi-bb" class="clash-title text-xl sm:text-2xl text-sky-400 mt-1">0 Activos</p>
+                <p id="kpi-bb-sub" class="text-xs text-slate-400 truncate mt-1">Maestro Constructor</p>
+            </div>
+        </section>
+
+        <!-- Category Filter Tabs -->
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 w-full sm:w-auto">
+                <button onclick="setFilter('all')" data-filter="all" class="filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap">
+                    Todas (<span id="count-all">0</span>)
+                </button>
+                <button onclick="setFilter('home')" data-filter="home" class="filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-card text-slate-300 border border-coc-border hover:border-amber-400/50 transition cursor-pointer whitespace-nowrap">
+                    <i class="fa-solid fa-fort-awesome text-amber-400 mr-1"></i> Aldea Principal (<span id="count-home">0</span>)
+                </button>
+                <button onclick="setFilter('lab')" data-filter="lab" class="filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-card text-slate-300 border border-coc-border hover:border-fuchsia-400/50 transition cursor-pointer whitespace-nowrap">
+                    <i class="fa-solid fa-flask text-fuchsia-400 mr-1"></i> Laboratorio (<span id="count-lab">0</span>)
+                </button>
+                <button onclick="setFilter('builder_base')" data-filter="builder_base" class="filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-card text-slate-300 border border-coc-border hover:border-sky-400/50 transition cursor-pointer whitespace-nowrap">
+                    <i class="fa-solid fa-gear text-sky-400 mr-1"></i> Base Constructor (<span id="count-bb">0</span>)
+                </button>
+            </div>
+
+            <div class="text-xs text-slate-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>Actualizando en tiempo real</span>
+            </div>
+        </div>
+
+        <!-- Active Upgrades Grid -->
+        <section id="upgrades-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Cards injected via JS -->
+        </section>
+
+        <!-- Helpers / Asistentes Section -->
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-5 shadow-md">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <div>
+                        <h2 class="clash-title text-lg text-white">Asistentes de la Aldea</h2>
+                        <p class="text-xs text-slate-400">Enfriamiento (Cooldown) y asignaciones activas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="helpers-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- Helpers injected via JS -->
+            </div>
+        </section>
+
+        <!-- Village Overview Summary -->
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-5 shadow-md">
+            <h2 class="clash-title text-lg text-white mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-crown text-coc-gold"></i>
+                <span>Resumen Rápido del Perfil (#Q8Y9PQRP8)</span>
+            </h2>
+            <div id="village-summary" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center">
+                <!-- Summary stats injected via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-coc-border bg-coc-card/60 py-4 px-4 text-center text-xs text-slate-500">
+        <p>Notificador de Mejoras Clash of Clans • Los datos se guardan localmente en tu navegador.</p>
+    </footer>
+
+    <!-- Modal: Paste New JSON -->
+    <div id="json-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-coc-card border-2 border-coc-gold/60 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="clash-title text-xl text-coc-gold flex items-center gap-2">
+                    <i class="fa-solid fa-code"></i>
+                    <span>Importar JSON de Clash of Clans</span>
+                </h3>
+                <button onclick="toggleJsonModal(false)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300">
+                Pega aquí el JSON exportado desde <span class="text-coc-gold font-semibold">Ajustes &gt; Más ajustes &gt; Exportar datos de la aldea</span> en Clash of Clans. Se detectarán automáticamente todos los constructores, laboratorio, mascotas y héroes en mejora.
+            </p>
+            <textarea id="json-input" rows="10" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl p-3 text-xs font-mono text-emerald-300 focus:outline-none" placeholder='{"tag":"#Q8Y9PQRP8","timestamp":...}'></textarea>
+            <div id="json-error" class="hidden text-xs text-rose-400 bg-rose-950/50 border border-rose-500/40 rounded-lg p-2.5"></div>
+            <div class="flex items-center justify-between gap-3 pt-2">
+                <button onclick="resetToDefaultJson()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
+                    Restaurar JSON Original
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleJsonModal(false)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button onclick="importNewJson()" class="btn-coc px-5 py-2 rounded-xl bg-gradient-to-b from-amber-400 to-amber-600 text-slate-950 font-bold text-xs sm:text-sm shadow-coc-gold cursor-pointer">
+                        Cargar Mejoras
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Custom Manual Timer -->
+    <div id="custom-timer-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-coc-card border-2 border-coc-border rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="clash-title text-xl text-white flex items-center gap-2">
+                    <i class="fa-solid fa-stopwatch text-coc-gold"></i>
+                    <span>Añadir Temporizador Manual</span>
+                </h3>
+                <button onclick="toggleCustomTimerModal(false)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre de la mejora o evento</label>
+                    <input id="custom-name" type="text" placeholder="Ej: Torre Infernal -> Nvl 8" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría</label>
+                    <select id="custom-category" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+                        <option value="home">Aldea Principal (Constructor)</option>
+                        <option value="lab">Laboratorio</option>
+                        <option value="builder_base">Base del Constructor</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Días</label>
+                        <input id="custom-days" type="number" min="0" value="0" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Horas</label>
+                        <input id="custom-hours" type="number" min="0" max="23" value="1" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Minutos</label>
+                        <input id="custom-mins" type="number" min="0" max="59" value="0" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="toggleCustomTimerModal(false)" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs sm:text-sm font-semibold cursor-pointer">
+                    Cancelar
+                </button>
+                <button onclick="addCustomTimer()" class="btn-coc px-4 py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 font-bold text-xs sm:text-sm shadow-coc-green cursor-pointer">
+                    Iniciar Temporizador
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. DICCIONARIO COMPLETO DE IDs DE CLASH OF CLANS (ESPAÑOL)
+        // ==========================================
+        const COC_DICT = {
+            // Edificios Aldea Principal (1000xxx)
+            1000000: { name: "Campamento", icon: "fa-campground" },
+            1000001: { name: "Ayuntamiento", icon: "fa-chess-rook" },
+            1000002: { name: "Mina de Oro", icon: "fa-coins" },
+            1000003: { name: "Recolector de Elixir", icon: "fa-droplet" },
+            1000004: { name: "Almacén de Oro", icon: "fa-vault" },
+            1000005: { name: "Almacén de Elixir", icon: "fa-flask" },
+            1000006: { name: "Cuartel", icon: "fa-shield-halved" },
+            1000007: { name: "Laboratorio", icon: "fa-microscope" },
+            1000008: { name: "Cañón", icon: "fa-bomb" },
+            1000009: { name: "Torre de Arqueras", icon: "fa-bullseye" },
+            1000010: { name: "Muro", icon: "fa-border-all" },
+            1000011: { name: "Torre de Magos", icon: "fa-wand-sparkles" },
+            1000012: { name: "Defensa Aérea", icon: "fa-jet-fighter-up" },
+            1000013: { name: "Mortero", icon: "fa-burst" },
+            1000014: { name: "Castillo del Clan", icon: "fa-fort-awesome" },
+            1000015: { name: "Choza de Constructor", icon: "fa-hammer" },
+            1000019: { name: "Tesla Oculto", icon: "fa-bolt" },
+            1000020: { name: "Fábrica de Hechizos", icon: "fa-hat-wizard" },
+            1000021: { name: "Ballesta", icon: "fa-crosshairs" },
+            1000023: { name: "Extractor de Elixir Oscuro", icon: "fa-oil-well" },
+            1000024: { name: "Almacén de Elixir Oscuro", icon: "fa-cube" },
+            1000026: { name: "Cuartel Oscuro", icon: "fa-skull" },
+            1000027: { name: "Torre Infernal", icon: "fa-fire" },
+            1000028: { name: "Controlador Aéreo", icon: "fa-wind" },
+            1000029: { name: "Fábrica de Hechizos Oscuros", icon: "fa-cauldron" },
+            1000031: { name: "Águila de Artillería", icon: "fa-feather-pointed" },
+            1000032: { name: "Cohete de Defensa / Torre Bombardeo", icon: "fa-explosion" },
+            1000059: { name: "Taller de Asedio", icon: "fa-gears" },
+            1000067: { name: "Catapulta", icon: "fa-meteor" },
+            1000068: { name: "Caseta de Mascotas", icon: "fa-paw" },
+            1000070: { name: "Herrería", icon: "fa-anvil" },
+            1000071: { name: "Salón de Héroes", icon: "fa-crown" },
+            1000072: { name: "Torre de Hechizos", icon: "fa-book-sparkles" },
+            1000077: { name: "Monolito", icon: "fa-monument" },
+            1000079: { name: "Cuartel de Aprendices / Guardería", icon: "fa-people-group" },
+            1000084: { name: "Torre Multi-Arquera", icon: "fa-arrows-to-dot" },
+            1000085: { name: "Cañón Rebote", icon: "fa-circle-dot" },
+            1000089: { name: "Torre Multi-Equipo", icon: "fa-tower-observation" },
+            1000093: { name: "Escupidor de Fuego", icon: "fa-dragon" },
+            1000097: { name: "Defensa Modular (Superestructura)", icon: "fa-cubes" },
+            1000106: { name: "Estructura Especial", icon: "fa-landmark" },
+
+            // Edificios Base del Constructor (1000033 - 1000082)
+            1000033: { name: "Muro (Constructor)", icon: "fa-border-all" },
+            1000034: { name: "Taller del Constructor", icon: "fa-house-chimney" },
+            1000035: { name: "Mina de Oro (Constructor)", icon: "fa-coins" },
+            1000036: { name: "Recolector Elixir (Constructor)", icon: "fa-droplet" },
+            1000037: { name: "Almacén Oro (Constructor)", icon: "fa-vault" },
+            1000038: { name: "Almacén Elixir (Constructor)", icon: "fa-flask" },
+            1000039: { name: "Mina de Gemas", icon: "fa-gem" },
+            1000040: { name: "Torre del Reloj", icon: "fa-clock" },
+            1000041: { name: "Cañón Doble", icon: "fa-bomb" },
+            1000042: { name: "Torre de Arqueras (Constructor)", icon: "fa-bullseye" },
+            1000043: { name: "Pirotecnia", icon: "fa-fire-flame-curved" },
+            1000044: { name: "Machacador", icon: "fa-weight-hanging" },
+            1000045: { name: "Puesto de Guardia", icon: "fa-shield" },
+            1000046: { name: "Bomba Aérea (Constructor)", icon: "fa-dharmachakra" },
+            1000048: { name: "Cañón (Constructor)", icon: "fa-bomb" },
+            1000049: { name: "Laboratorio Estelar", icon: "fa-star" },
+            1000050: { name: "Campamento (Constructor)", icon: "fa-campground" },
+            1000051: { name: "Cuartel del Constructor", icon: "fa-shield-halved" },
+            1000052: { name: "Cabaña de O.T.T.O", icon: "fa-robot" },
+            1000053: { name: "Megatesla", icon: "fa-bolt" },
+            1000054: { name: "Cañón Gigante", icon: "fa-bahai" },
+            1000055: { name: "Multimortero", icon: "fa-burst" },
+            1000056: { name: "Tostadora", icon: "fa-fire-burner" },
+            1000057: { name: "Puesto Avanzado O.T.T.O", icon: "fa-tower-cell" },
+            1000058: { name: "Lanzalava", icon: "fa-volcano" },
+            1000063: { name: "Torre de Curación", icon: "fa-heart-pulse" },
+            1000065: { name: "Arco X (Constructor)", icon: "fa-crosshairs" },
+
+            // Tropas & Máquinas (4000xxx)
+            4000000: { name: "Bárbaro", icon: "fa-khanda" },
+            4000001: { name: "Arquera", icon: "fa-bow-arrow" },
+            4000002: { name: "Duende", icon: "fa-sack-dollar" },
+            4000003: { name: "Gigante", icon: "fa-hand-fist" },
+            4000004: { name: "Rompemuros", icon: "fa-bomb" },
+            4000005: { name: "Globo Bombástico", icon: "fa-hot-air-balloon" },
+            4000006: { name: "Mago", icon: "fa-hat-wizard" },
+            4000007: { name: "Curandera", icon: "fa-feather" },
+            4000008: { name: "Dragón", icon: "fa-dragon" },
+            4000009: { name: "P.E.K.K.A", icon: "fa-robot" },
+            4000010: { name: "Esbirro", icon: "fa-ghost" },
+            4000011: { name: "Montapuercos", icon: "fa-hammer" },
+            4000012: { name: "Valquiria", icon: "fa-axe" },
+            4000013: { name: "Gólem", icon: "fa-cubes-stacked" },
+            4000015: { name: "Bruja", icon: "fa-skull" },
+            4000017: { name: "Sabueso de Lava", icon: "fa-fire" },
+            4000022: { name: "Lanzarrocas", icon: "fa-bowling-ball" },
+            4000023: { name: "Bebé Dragón", icon: "fa-dragon" },
+            4000024: { name: "Minero", icon: "fa-helmet-safety" },
+            4000051: { name: "Destructor de Muros", icon: "fa-truck-monster" },
+            4000052: { name: "Dirigible Bélico", icon: "fa-jet-fighter" },
+            4000053: { name: "Yeti", icon: "fa-icicles" },
+            4000058: { name: "Gólem de Hielo", icon: "fa-snowflake" },
+            4000059: { name: "Dragón Eléctrico", icon: "fa-bolt" },
+            4000062: { name: "Arrojadrizas", icon: "fa-shuttle-space" },
+            4000065: { name: "Cazadora de Héroes", icon: "fa-user-ninja" },
+            4000075: { name: "Cuartel de Asedio", icon: "fa-dungeon" },
+            4000082: { name: "Montadragones", icon: "fa-dragon" },
+            4000095: { name: "Titánide Eléctrica", icon: "fa-bolt-lightning" },
+            4000097: { name: "Arraiga", icon: "fa-tree" },
+            4000110: { name: "Druida", icon: "fa-leaf" },
+            4000123: { name: "Lanzador", icon: "fa-bullseye" },
+            4000195: { name: "Tropa Especial", icon: "fa-star" },
+
+            // Héroes (28000xxx)
+            28000000: { name: "Rey Bárbaro", icon: "fa-crown" },
+            28000001: { name: "Reina Arquera", icon: "fa-crown" },
+            28000002: { name: "Gran Centinela", icon: "fa-book-open" },
+            28000003: { name: "Máquina Bélica", icon: "fa-robot" },
+            28000004: { name: "Luchadora Real", icon: "fa-shield-halved" },
+            28000005: { name: "Helicóptero de Combate", icon: "fa-helicopter" },
+            28000006: { name: "Príncipe Esbirro", icon: "fa-crown" },
+            28000007: { name: "Héroe Especial", icon: "fa-medal" },
+
+            // Hechizos (26000xxx)
+            26000000: { name: "Hechizo de Rayo", icon: "fa-bolt" },
+            26000001: { name: "Hechizo de Curación", icon: "fa-heart" },
+            26000002: { name: "Hechizo de Furia", icon: "fa-fire-flame-simple" },
+            26000003: { name: "Hechizo de Salto", icon: "fa-arrow-up-right-dots" },
+            26000005: { name: "Hechizo de Hielo", icon: "fa-snowflake" },
+            26000009: { name: "Hechizo de Veneno", icon: "fa-skull-crossbones" },
+            26000010: { name: "Hechizo de Terremoto", icon: "fa-house-crack" },
+            26000011: { name: "Hechizo de Aceleración", icon: "fa-forward-fast" },
+            26000016: { name: "Hechizo de Clonación", icon: "fa-clone" },
+            26000017: { name: "Hechizo de Esqueletos", icon: "fa-skull" },
+            26000028: { name: "Hechizo de Murciélagos", icon: "fa-bat" },
+            26000035: { name: "Hechizo de Invisibilidad", icon: "fa-eye-slash" },
+            26000053: { name: "Hechizo de Invocación", icon: "fa-portal-enter" },
+            26000070: { name: "Hechizo de Maleza", icon: "fa-seedling" },
+            26000109: { name: "Hechizo de Resurrección", icon: "fa-ankh" },
+
+            // Mascotas (73000xxx)
+            73000000: { name: "L.A.S.S.I", icon: "fa-dog" },
+            73000001: { name: "Búho Eléctrico", icon: "fa-crow" },
+            73000002: { name: "Yak Poderoso", icon: "fa-hippo" },
+            73000003: { name: "Unicornio", icon: "fa-horse" },
+            73000004: { name: "Fénix", icon: "fa-phoenix-framework" },
+            73000007: { name: "Diggy", icon: "fa-paw" },
+            73000008: { name: "Lagarto Venenoso", icon: "fa-staff-snake" },
+            73000009: { name: "Morsa Helada", icon: "fa-icicles" },
+            73000010: { name: "Zorro Espiritual", icon: "fa-fox" },
+
+            // Asistentes / Helpers (93000xxx)
+            93000000: { name: "Aprendiz de Constructor", icon: "fa-helmet-safety", role: "Acelera edificios/héroes" },
+            93000001: { name: "Ayudante de Laboratorio", icon: "fa-flask-vial", role: "Acelera investigaciones" },
+            93000002: { name: "Alquimista", icon: "fa-scale-balanced", role: "Convierte recursos diarios" },
+            93000003: { name: "Prospector / Asistente", icon: "fa-compass", role: "Asistente de aldea" }
+        };
+
+        // ==========================================
+        // 2. JSON INICIAL PRECARGADO DEL USUARIO
+        // ==========================================
+        const DEFAULT_USER_JSON = {"tag":"#Q8Y9PQRP8","timestamp":1795316213,"helpers":[{"data":93000000,"lvl":5,"helper_cooldown":15946},{"data":93000001,"lvl":4,"helper_cooldown":15946},{"data":93000002,"lvl":1,"helper_cooldown":15946},{"data":93000003,"lvl":1}],"buildings":[{"data":1000001,"lvl":17,"timer":205227,"helper_recurrent":true,"weapon":1},{"data":1000011,"lvl":12,"timer":49484},{"data":1000013,"lvl":11,"gear_up":1},{"data":1000011,"lvl":11,"timer":9673},{"data":1000011,"lvl":12,"timer":128874},{"data":1000011,"lvl":11,"timer":88513},{"data":1000097,"types":[{"data":103000011,"modules":[{"data":102000033,"lvl":1},{"data":102000034,"lvl":1},{"data":102000035,"lvl":1}]},{"data":103000012,"modules":[{"data":102000036,"lvl":1},{"data":102000037,"lvl":1},{"data":102000038,"lvl":1}]},{"data":103000013,"modules":[{"data":102000039,"lvl":1},{"data":102000040,"lvl":1},{"data":102000041,"lvl":1}]}]},{"data":1000000,"lvl":12,"cnt":3},{"data":1000000,"lvl":13,"cnt":1},{"data":1000002,"lvl":15,"cnt":7},{"data":1000003,"lvl":15,"cnt":4},{"data":1000004,"lvl":15,"cnt":6},{"data":1000004,"lvl":16,"cnt":1},{"data":1000005,"lvl":16,"cnt":4},{"data":1000006,"lvl":17,"cnt":1},{"data":1000007,"lvl":15,"cnt":1},{"data":1000009,"lvl":2,"cnt":1},{"data":1000009,"lvl":19,"cnt":1},{"data":1000010,"lvl":11,"cnt":51},{"data":1000010,"lvl":12,"cnt":273},{"data":1000010,"lvl":18,"cnt":1},{"data":1000011,"lvl":9,"cnt":1},{"data":1000012,"lvl":12,"cnt":4},{"data":1000013,"lvl":10,"cnt":1},{"data":1000013,"lvl":11,"cnt":2},{"data":1000014,"lvl":12,"cnt":1},{"data":1000015,"lvl":2,"cnt":5},{"data":1000019,"lvl":2,"cnt":1},{"data":1000019,"lvl":4,"cnt":3},{"data":1000019,"lvl":5,"cnt":1},{"data":1000020,"lvl":7,"cnt":1},{"data":1000021,"lvl":6,"cnt":4},{"data":1000023,"lvl":7,"cnt":1},{"data":1000023,"lvl":8,"cnt":1},{"data":1000023,"lvl":9,"cnt":1},{"data":1000024,"lvl":8,"cnt":1},{"data":1000026,"lvl":11,"cnt":1},{"data":1000027,"lvl":7,"cnt":2},{"data":1000027,"lvl":8,"cnt":1},{"data":1000028,"lvl":7,"cnt":2},{"data":1000029,"lvl":7,"cnt":1},{"data":1000032,"lvl":7,"cnt":2},{"data":1000059,"lvl":4,"cnt":1},{"data":1000067,"lvl":4,"cnt":1},{"data":1000067,"lvl":5,"cnt":1},{"data":1000068,"lvl":4,"cnt":1},{"data":1000070,"lvl":7,"cnt":1},{"data":1000071,"lvl":9,"cnt":1},{"data":1000072,"lvl":1,"cnt":2},{"data":1000077,"lvl":4,"cnt":1},{"data":1000079,"lvl":2,"cnt":1},{"data":1000084,"lvl":1,"cnt":3},{"data":1000085,"lvl":1,"cnt":3},{"data":1000089,"lvl":2,"cnt":2},{"data":1000093,"lvl":1,"cnt":1},{"data":1000106,"lvl":1,"cnt":1}],"traps":[{"data":12000000,"lvl":1,"cnt":1},{"data":12000000,"lvl":5,"cnt":7},{"data":12000001,"lvl":2,"cnt":6},{"data":12000001,"lvl":3,"cnt":3},{"data":12000002,"lvl":1,"cnt":2},{"data":12000002,"lvl":2,"cnt":3},{"data":12000002,"lvl":3,"cnt":3},{"data":12000005,"lvl":1,"cnt":3},{"data":12000005,"lvl":2,"cnt":3},{"data":12000005,"lvl":3,"cnt":1},{"data":12000006,"lvl":1,"cnt":6},{"data":12000006,"lvl":2,"cnt":3},{"data":12000008,"lvl":1,"cnt":3},{"data":12000008,"lvl":2,"cnt":1},{"data":12000016,"lvl":1,"cnt":1},{"data":12000020,"lvl":1,"cnt":1}],"decos":[{"data":18000065,"cnt":1},{"data":18000114,"cnt":1},{"data":18000175,"cnt":1},{"data":18000184,"cnt":1},{"data":18000193,"cnt":1},{"data":18000234,"cnt":1},{"data":18000248,"cnt":1}],"obstacles":[{"data":8000000,"cnt":3},{"data":8000004,"cnt":6},{"data":8000006,"cnt":4},{"data":8000007,"cnt":4},{"data":8000008,"cnt":3},{"data":8000009,"cnt":2},{"data":8000010,"cnt":6},{"data":8000013,"cnt":1},{"data":8000082,"cnt":1},{"data":8000117,"cnt":1},{"data":8000127,"cnt":1},{"data":8000128,"cnt":1},{"data":8000131,"cnt":4},{"data":8000133,"cnt":1},{"data":8000135,"cnt":1},{"data":8000137,"cnt":1},{"data":8000138,"cnt":3},{"data":8000139,"cnt":4}],"units":[{"data":4000000,"lvl":6},{"data":4000001,"lvl":5},{"data":4000002,"lvl":8},{"data":4000003,"lvl":6},{"data":4000004,"lvl":4},{"data":4000005,"lvl":10},{"data":4000006,"lvl":5},{"data":4000007,"lvl":5},{"data":4000008,"lvl":9,"timer":64323,"helper_recurrent":true},{"data":4000009,"lvl":9},{"data":4000010,"lvl":3},{"data":4000011,"lvl":11},{"data":4000012,"lvl":3},{"data":4000013,"lvl":5},{"data":4000015,"lvl":5},{"data":4000017,"lvl":6},{"data":4000022,"lvl":6},{"data":4000023,"lvl":4},{"data":4000024,"lvl":2},{"data":4000053,"lvl":4},{"data":4000058,"lvl":2},{"data":4000059,"lvl":8},{"data":4000065,"lvl":5},{"data":4000082,"lvl":1},{"data":4000095,"lvl":2},{"data":4000097,"lvl":1},{"data":4000110,"lvl":1},{"data":4000123,"lvl":2},{"data":4000195,"lvl":1}],"siege_machines":[{"data":4000051,"lvl":1},{"data":4000052,"lvl":2},{"data":4000062,"lvl":4},{"data":4000075,"lvl":1}],"heroes":[{"data":28000000,"lvl":57},{"data":28000001,"lvl":50},{"data":28000002,"lvl":35},{"data":28000004,"lvl":30},{"data":28000006,"lvl":46},{"data":28000007,"lvl":7}],"spells":[{"data":26000000,"lvl":12},{"data":26000001,"lvl":7},{"data":26000002,"lvl":6},{"data":26000003,"lvl":4},{"data":26000005,"lvl":3},{"data":26000009,"lvl":2},{"data":26000010,"lvl":3},{"data":26000011,"lvl":3},{"data":26000016,"lvl":1},{"data":26000017,"lvl":3},{"data":26000028,"lvl":2},{"data":26000035,"lvl":4},{"data":26000053,"lvl":2},{"data":26000070,"lvl":3},{"data":26000109,"lvl":1}],"pets":[{"data":73000000,"lvl":3},{"data":73000001,"lvl":6},{"data":73000002,"lvl":2},{"data":73000003,"lvl":9}],"equipment":[{"data":90000000,"lvl":2},{"data":90000001,"lvl":12},{"data":90000002,"lvl":2},{"data":90000003,"lvl":9},{"data":90000004,"lvl":8},{"data":90000005,"lvl":6},{"data":90000006,"lvl":15},{"data":90000007,"lvl":6},{"data":90000008,"lvl":16},{"data":90000009,"lvl":1},{"data":90000010,"lvl":12},{"data":90000011,"lvl":1},{"data":90000013,"lvl":1},{"data":90000014,"lvl":15},{"data":90000015,"lvl":12},{"data":90000016,"lvl":1},{"data":90000017,"lvl":18},{"data":90000019,"lvl":1},{"data":90000020,"lvl":10},{"data":90000022,"lvl":15},{"data":90000024,"lvl":9},{"data":90000032,"lvl":12},{"data":90000034,"lvl":9},{"data":90000035,"lvl":12},{"data":90000039,"lvl":12},{"data":90000040,"lvl":10},{"data":90000041,"lvl":1},{"data":90000042,"lvl":5},{"data":90000043,"lvl":8},{"data":90000044,"lvl":1},{"data":90000047,"lvl":1},{"data":90000048,"lvl":15},{"data":90000049,"lvl":1},{"data":90000050,"lvl":1},{"data":90000051,"lvl":1},{"data":90000052,"lvl":6},{"data":90000053,"lvl":11},{"data":90000057,"lvl":1},{"data":90000060,"lvl":1},{"data":90000061,"lvl":1},{"data":90000062,"lvl":1},{"data":90000063,"lvl":1}],"house_parts":[82000000,82000001,82000002,82000008,82000009,82000010,82000011,82000013,82000014,82000015,82000016,82000017,82000029,82000047,82000048,82000049,82000053,82000058,82000059,82000060,82000061,82000062,82000063],"skins":[52000292,52000337,52000320],"building_variants":[],"sceneries":[],"buildings2":[{"data":1000033,"lvl":1,"cnt":40},{"data":1000033,"lvl":2,"cnt":100},{"data":1000033,"lvl":3,"cnt":40},{"data":1000034,"lvl":9,"cnt":1},{"data":1000035,"lvl":3,"cnt":1},{"data":1000035,"lvl":7,"cnt":2},{"data":1000036,"lvl":7,"cnt":1},{"data":1000036,"lvl":8,"cnt":1},{"data":1000037,"lvl":3,"cnt":1},{"data":1000037,"lvl":7,"cnt":1},{"data":1000037,"lvl":8,"cnt":1},{"data":1000038,"lvl":8,"cnt":2},{"data":1000039,"lvl":7,"cnt":1},{"data":1000040,"lvl":10,"cnt":1},{"data":1000041,"lvl":1,"cnt":1},{"data":1000041,"lvl":6,"cnt":2},{"data":1000042,"lvl":1,"cnt":6},{"data":1000043,"lvl":1,"cnt":1},{"data":1000043,"lvl":5,"cnt":2},{"data":1000044,"lvl":4,"cnt":1},{"data":1000044,"lvl":5,"cnt":1},{"data":1000044,"lvl":6,"cnt":1},{"data":1000045,"lvl":9,"cnt":1},{"data":1000046,"lvl":8,"cnt":1},{"data":1000048,"lvl":5,"cnt":1},{"data":1000048,"lvl":6,"cnt":2},{"data":1000049,"lvl":1,"cnt":1},{"data":1000050,"lvl":1,"cnt":2},{"data":1000050,"lvl":5,"cnt":3},{"data":1000051,"lvl":5,"cnt":1},{"data":1000052,"lvl":1,"cnt":1},{"data":1000053,"lvl":1,"cnt":1},{"data":1000054,"lvl":6,"cnt":1},{"data":1000055,"lvl":4,"cnt":2},{"data":1000056,"lvl":6,"cnt":1},{"data":1000057,"lvl":1,"cnt":1},{"data":1000058,"lvl":6,"cnt":1},{"data":1000063,"lvl":1,"cnt":1},{"data":1000065,"lvl":1,"cnt":1},{"data":1000078,"lvl":1,"cnt":1},{"data":1000080,"lvl":1,"cnt":1},{"data":1000082,"lvl":1,"cnt":1}],"traps2":[{"data":12000010,"lvl":1,"cnt":2},{"data":12000010,"lvl":2,"cnt":2},{"data":12000010,"lvl":3,"cnt":2},{"data":12000011,"lvl":4,"cnt":5},{"data":12000013,"lvl":5,"cnt":5},{"data":12000014,"lvl":1,"cnt":2},{"data":12000014,"lvl":5,"cnt":2}],"decos2":[],"obstacles2":[{"data":8000041,"cnt":3},{"data":8000049,"cnt":1},{"data":8000053,"cnt":1},{"data":8000055,"cnt":1},{"data":8000056,"cnt":1},{"data":8000057,"cnt":2},{"data":8000058,"cnt":7},{"data":8000059,"cnt":4},{"data":8000060,"cnt":1},{"data":8000063,"cnt":13},{"data":8000064,"cnt":12},{"data":8000091,"cnt":4},{"data":8000092,"cnt":2},{"data":8000093,"cnt":1},{"data":8000095,"cnt":2},{"data":8000096,"cnt":1},{"data":8000097,"cnt":2},{"data":8000098,"cnt":2},{"data":8000099,"cnt":1},{"data":8000100,"cnt":4},{"data":8000101,"cnt":2},{"data":8000102,"cnt":2},{"data":8000105,"cnt":1},{"data":8000106,"cnt":1},{"data":8000107,"cnt":1}],"units2":[{"data":4000031,"lvl":15},{"data":4000032,"lvl":10},{"data":4000033,"lvl":9},{"data":4000034,"lvl":10},{"data":4000035,"lvl":10},{"data":4000036,"lvl":14},{"data":4000037,"lvl":10},{"data":4000038,"lvl":11},{"data":4000041,"lvl":9},{"data":4000042,"lvl":10}],"heroes2":[{"data":28000003,"lvl":15,"timer":266055},{"data":28000005,"lvl":15}],"skins2":[],"building_variants2":[],"sceneries2":[],"emotes":[126000000,126000001,126000002,126000003,126000004],"boosts":{}};
+
+        // ==========================================
+        // 3. ESTADO GLOBAL DE LA APLICACIÓN
+        // ==========================================
+        let villageData = null;
+        let activeUpgrades = [];
+        let customTimers = [];
+        let helpersList = [];
+        let timeMode = 'live'; // 'live' (usa timestamp del JSON) o 'raw' (cuenta atrás desde carga)
+        let appLoadUnix = Math.floor(Date.now() / 1000);
+        let activeFilter = 'all';
+        let builderPotionActive = false;
+        let labPotionActive = false;
+        let notifiedIds = new Set();
+
+        // ==========================================
+        // 4. INICIALIZACIÓN Y PERSISTENCIA
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedState();
+            updateNotificationButtonUI();
+            startTicker();
+        });
+
+        function loadSavedState() {
+            try {
+                const savedJsonStr = localStorage.getItem('coc_tracker_json');
+                const savedCustom = localStorage.getItem('coc_tracker_custom');
+                const savedLoadUnix = localStorage.getItem('coc_tracker_load_unix');
+
+                if (savedCustom) {
+                    customTimers = JSON.parse(savedCustom);
+                }
+
+                if (savedJsonStr) {
+                    villageData = JSON.parse(savedJsonStr);
+                    appLoadUnix = savedLoadUnix ? parseInt(savedLoadUnix, 10) : Math.floor(Date.now() / 1000);
+                } else {
+                    villageData = DEFAULT_USER_JSON;
+                    appLoadUnix = Math.floor(Date.now() / 1000);
+                    localStorage.setItem('coc_tracker_json', JSON.stringify(villageData));
+                    localStorage.setItem('coc_tracker_load_unix', appLoadUnix.toString());
+                }
+            } catch (e) {
+                console.error("Error leyendo localStorage:", e);
+                villageData = DEFAULT_USER_JSON;
+            }
+
+            document.getElementById('json-input').value = JSON.stringify(villageData, null, 2);
+            parseVillageData();
+        }
+
+        // ==========================================
+        // 5. PARSEO DEL JSON DE CLASH OF CLANS
+        // ==========================================
+        function parseVillageData() {
+            if (!villageData) return;
+
+            // Tag y fecha de exportación
+            const tag = villageData.tag || "#DESCONOCIDO";
+            document.getElementById('player-tag-badge').textContent = tag;
+
+            const exportTs = villageData.timestamp || Math.floor(Date.now() / 1000);
+            const exportDate = new Date(exportTs * 1000);
+            document.getElementById('export-date-label').textContent = 
+                `Exportado: ${exportDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} a las ${exportDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+
+            // Extraer mejoras activas de todas las categorías del JSON
+            const categoriesToScan = [
+                { key: 'buildings', category: 'home', label: 'Aldea Principal' },
+                { key: 'traps', category: 'home', label: 'Trampa (Aldea)' },
+                { key: 'heroes', category: 'home', label: 'Héroe (Aldea)' },
+                { key: 'units', category: 'lab', label: 'Laboratorio (Tropa)' },
+                { key: 'spells', category: 'lab', label: 'Laboratorio (Hechizo)' },
+                { key: 'siege_machines', category: 'lab', label: 'Laboratorio (Asedio)' },
+                { key: 'pets', category: 'home', label: 'Caseta de Mascotas' },
+                { key: 'buildings2', category: 'builder_base', label: 'Base del Constructor' },
+                { key: 'traps2', category: 'builder_base', label: 'Trampa (Constructor)' },
+                { key: 'units2', category: 'builder_base', label: 'Lab. Estelar' },
+                { key: 'heroes2', category: 'builder_base', label: 'Héroe (Constructor)' }
+            ];
+
+            activeUpgrades = [];
+            let indexCounter = 0;
+
+            categoriesToScan.forEach(group => {
+                const items = villageData[group.key];
+                if (Array.isArray(items)) {
+                    items.forEach(item => {
+                        if (item.timer && item.timer > 0) {
+                            const info = COC_DICT[item.data] || { 
+                                name: `Elemento ID ${item.data}`, 
+                                icon: "fa-hammer" 
+                            };
+                            const currentLvl = item.lvl || 1;
+                            activeUpgrades.push({
+                                id: `${group.key}_${item.data}_${indexCounter++}`,
+                                dataId: item.data,
+                                name: info.name,
+                                icon: info.icon,
+                                currentLvl: currentLvl,
+                                targetLvl: currentLvl + 1,
+                                rawTimer: item.timer,
+                                exportTimestamp: exportTs,
+                                category: group.category,
+                                subLabel: group.label,
+                                helperAssigned: Boolean(item.helper_recurrent),
+                                isCustom: false
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Asistentes (Helpers)
+            helpersList = (villageData.helpers || []).map(h => {
+                const info = COC_DICT[h.data] || { name: `Asistente ${h.data}`, icon: "fa-user-gear", role: "Asistente" };
+                return {
+                    id: h.data,
+                    name: info.name,
+                    icon: info.icon,
+                    role: info.role || "Asistente de Aldea",
+                    lvl: h.lvl || 1,
+                    cooldown: h.helper_cooldown || 0,
+                    exportTimestamp: exportTs
+                };
+            });
+
+            renderVillageSummary();
+            updateCounts();
+            renderAll();
+        }
+
+        // ==========================================
+        // 6. CÁLCULO DE TIEMPO RESTANTE
+        // ==========================================
+        function getRemainingSeconds(item) {
+            const nowUnix = Math.floor(Date.now() / 1000);
+            let remaining = 0;
+
+            if (item.isCustom) {
+                remaining = item.targetUnix - nowUnix;
+            } else if (timeMode === 'live') {
+                // Tiempo exacto basado en el timestamp del export + timer
+                const targetUnix = item.exportTimestamp + item.rawTimer;
+                remaining = targetUnix - nowUnix;
+            } else {
+                // Modo crudo: cuenta atrás desde el instante en que se cargó el JSON
+                const elapsedSinceLoad = nowUnix - appLoadUnix;
+                remaining = item.rawTimer - elapsedSinceLoad;
+            }
+
+            // Aplicar simulación de Pociones
+            if (builderPotionActive && item.category === 'home' && !item.subLabel.includes('Mascotas')) {
+                remaining -= 9 * 3600; // Poción del constructor ahorra 9 horas
+            }
+            if (labPotionActive && item.category === 'lab') {
+                remaining -= 23 * 3600; // Poción de investigación ahorra 23 horas
+            }
+
+            return Math.max(0, remaining);
+        }
+
+        function formatDuration(totalSeconds) {
+            if (totalSeconds <= 0) return "¡COMPLETADO!";
+            const d = Math.floor(totalSeconds / 86400);
+            const h = Math.floor((totalSeconds % 86400) / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = Math.floor(totalSeconds % 60);
+
+            const pad = (n) => String(n).padStart(2, '0');
+            if (d > 0) {
+                return `${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s`;
+            }
+            return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
+        }
+
+        function formatCompletionDate(remainingSeconds) {
+            if (remainingSeconds <= 0) return "Listo para recoger";
+            const finishDate = new Date(Date.now() + remainingSeconds * 1000);
+            const today = new Date();
+            const isToday = finishDate.toDateString() === today.toDateString();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const isTomorrow = finishDate.toDateString() === tomorrow.toDateString();
+
+            const timeStr = finishDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            if (isToday) return `Hoy a las ${timeStr}`;
+            if (isTomorrow) return `Mañana a las ${timeStr}`;
+            return `${finishDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} • ${timeStr}`;
+        }
+
+        // ==========================================
+        // 7. RENDERIZADO DE INTERFAZ
+        // ==========================================
+        function getAllCombinedItems() {
+            return [...activeUpgrades, ...customTimers];
+        }
+
+        function updateCounts() {
+            const all = getAllCombinedItems();
+            document.getElementById('count-all').textContent = all.length;
+            document.getElementById('count-home').textContent = all.filter(i => i.category === 'home').length;
+            document.getElementById('count-lab').textContent = all.filter(i => i.category === 'lab').length;
+            document.getElementById('count-bb').textContent = all.filter(i => i.category === 'builder_base').length;
+        }
+
+        function renderAll() {
+            const allItems = getAllCombinedItems();
+
+            // Ordenar por el que termina más pronto primero
+            const sortedItems = [...allItems].sort((a, b) => getRemainingSeconds(a) - getRemainingSeconds(b));
+
+            // Actualizar KPIs
+            updateKPIs(sortedItems);
+
+            // Filtrar según pestaña activa
+            const filtered = activeFilter === 'all' 
+                ? sortedItems 
+                : sortedItems.filter(i => i.category === activeFilter);
+
+            const grid = document.getElementById('upgrades-grid');
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full bg-coc-card border border-coc-border rounded-2xl p-8 text-center">
+                        <i class="fa-solid fa-mug-hot text-3xl text-slate-500 mb-2"></i>
+                        <p class="text-slate-300 font-semibold">No hay mejoras activas en esta categoría</p>
+                        <p class="text-xs text-slate-500 mt-1">Tus constructores están descansando o puedes añadir un temporizador manual.</p>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = filtered.map(item => createUpgradeCardHTML(item)).join('');
+            }
+
+            renderHelpers();
+        }
+
+        function createUpgradeCardHTML(item) {
+            const remaining = getRemainingSeconds(item);
+            const isCompleted = remaining <= 0;
+            const totalBase = item.isCustom ? item.totalDuration : item.rawTimer;
+            const progressPct = isCompleted ? 100 : Math.min(99, Math.max(4, Math.round(((totalBase - remaining) / totalBase) * 100)));
+
+            // Colores por categoría
+            let badgeStyle = "bg-amber-500/15 text-amber-300 border-amber-500/30";
+            let barColor = "from-amber-400 to-amber-500";
+            let iconBg = "bg-amber-500/20 text-amber-400 border-amber-500/30";
+
+            if (item.category === 'lab') {
+                badgeStyle = "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30";
+                barColor = "from-fuchsia-500 to-purple-500";
+                iconBg = "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30";
+            } else if (item.category === 'builder_base') {
+                badgeStyle = "bg-sky-500/15 text-sky-300 border-sky-500/30";
+                barColor = "from-sky-400 to-blue-500";
+                iconBg = "bg-sky-500/20 text-sky-400 border-sky-500/30";
+            }
+
+            if (isCompleted) {
+                barColor = "from-emerald-400 to-emerald-500";
+            }
+
+            // Verificar notificación automática al llegar a 0
+            if (isCompleted && !notifiedIds.has(item.id)) {
+                notifiedIds.add(item.id);
+                triggerUpgradeFinishedAlert(item);
+            }
+
+            return `
+                <div class="bg-coc-card hover:bg-coc-cardHover border ${isCompleted ? 'border-emerald-400 completed-glow' : 'border-coc-border'} rounded-2xl p-4 flex flex-col justify-between transition shadow-lg relative">
+                    <div>
+                        <!-- Top Row: Category & Helper Badge -->
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold border ${badgeStyle}">
+                                ${item.subLabel}
+                            </span>
+                            <div class="flex items-center gap-1.5">
+                                ${item.helperAssigned ? `
+                                    <span title="Asistente recurrente asignado" class="px-2 py-0.5 rounded-lg bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 text-[11px] font-semibold flex items-center gap-1">
+                                        <i class="fa-solid fa-user-astronaut text-[10px]"></i> Asistente
+                                    </span>
+                                ` : ''}
+                                ${item.isCustom ? `
+                                    <button onclick="deleteCustomTimer('${item.id}')" title="Eliminar temporizador" class="text-slate-500 hover:text-rose-400 text-xs px-1.5 cursor-pointer">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Item Info -->
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl border ${iconBg} flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid ${item.icon}"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-bold text-white text-base truncate">${item.name}</h3>
+                                ${!item.isCustom ? `
+                                    <div class="flex items-center gap-1.5 mt-0.5 text-xs font-semibold">
+                                        <span class="text-slate-400">Nivel ${item.currentLvl}</span>
+                                        <i class="fa-solid fa-arrow-right text-[10px] text-coc-gold"></i>
+                                        <span class="text-coc-gold">Nivel ${item.targetLvl}</span>
+                                    </div>
+                                ` : `
+                                    <p class="text-xs text-slate-400 mt-0.5">Temporizador personalizado</p>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Countdown & Progress Bar -->
+                    <div class="mt-4 pt-3 border-t border-coc-border/60">
+                        <div class="flex items-baseline justify-between mb-1.5">
+                            <span class="clash-title text-lg sm:text-xl ${isCompleted ? 'text-emerald-400' : 'text-white'} tracking-wide">
+                                ${formatDuration(remaining)}
+                            </span>
+                            <span class="text-[11px] font-medium text-slate-400">
+                                ${formatCompletionDate(remaining)}
+                            </span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-coc-border/80">
+                            <div class="h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500" style="width: ${progressPct}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateKPIs(sortedItems) {
+            const activeItems = sortedItems.filter(i => getRemainingSeconds(i) > 0);
+            const nextItem = activeItems[0];
+
+            if (nextItem) {
+                document.getElementById('kpi-next-timer').textContent = formatDuration(getRemainingSeconds(nextItem));
+                document.getElementById('kpi-next-name').textContent = `${nextItem.name} (Nvl ${nextItem.targetLvl})`;
+            } else {
+                document.getElementById('kpi-next-timer').textContent = "¡Todo Listo!";
+                document.getElementById('kpi-next-name').textContent = "Sin mejoras pendientes";
+            }
+
+            const homeCount = sortedItems.filter(i => i.category === 'home' && getRemainingSeconds(i) > 0).length;
+            document.getElementById('kpi-builders').textContent = `${homeCount} / 5 Activos`;
+
+            const labItem = sortedItems.find(i => i.category === 'lab' && getRemainingSeconds(i) > 0);
+            if (labItem) {
+                document.getElementById('kpi-lab').textContent = "Ocupado";
+                document.getElementById('kpi-lab-sub').textContent = `${labItem.name} Nvl ${labItem.targetLvl}`;
+            } else {
+                document.getElementById('kpi-lab').textContent = "Libre";
+                document.getElementById('kpi-lab-sub').textContent = "Listo para investigar";
+            }
+
+            const bbItems = sortedItems.filter(i => i.category === 'builder_base' && getRemainingSeconds(i) > 0);
+            document.getElementById('kpi-bb').textContent = `${bbItems.length} / 2 Activos`;
+            document.getElementById('kpi-bb-sub').textContent = bbItems[0] ? `${bbItems[0].name} Nvl ${bbItems[0].targetLvl}` : "Constructores libres";
+        }
+
+        function renderHelpers() {
+            const container = document.getElementById('helpers-grid');
+            if (!helpersList.length) {
+                container.innerHTML = `<p class="text-xs text-slate-400 col-span-full">No se encontraron asistentes en el JSON.</p>`;
+                return;
+            }
+
+            const nowUnix = Math.floor(Date.now() / 1000);
+
+            container.innerHTML = helpersList.map(helper => {
+                let cdRemaining = 0;
+                if (helper.cooldown > 0) {
+                    if (timeMode === 'live') {
+                        cdRemaining = Math.max(0, (helper.exportTimestamp + helper.cooldown) - nowUnix);
+                    } else {
+                        cdRemaining = Math.max(0, helper.cooldown - (nowUnix - appLoadUnix));
+                    }
+                }
+
+                const isReady = cdRemaining <= 0;
+
+                return `
+                    <div class="bg-slate-900/80 border border-coc-border rounded-xl p-3 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shrink-0">
+                            <i class="fa-solid ${helper.icon}"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-1">
+                                <p class="text-xs font-bold text-white truncate">${helper.name}</p>
+                                <span class="px-1.5 py-0.5 rounded bg-slate-800 text-coc-gold text-[10px] font-bold">Nvl ${helper.lvl}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 truncate">${helper.role}</p>
+                            <div class="mt-1">
+                                ${isReady 
+                                    ? `<span class="text-[11px] font-bold text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i>Disponible ahora</span>`
+                                    : `<span class="text-[11px] font-semibold text-amber-300"><i class="fa-solid fa-hourglass-half mr-1"></i>Listo en ${formatDuration(cdRemaining)}</span>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderVillageSummary() {
+            if (!villageData) return;
+            const th = (villageData.buildings || []).find(b => b.data === 1000001);
+            const thLvl = th ? (th.timer ? `${th.lvl} → ${th.lvl + 1}` : th.lvl) : "?";
+            const heroesCount = (villageData.heroes || []).length;
+            const petsCount = (villageData.pets || []).length;
+            const unitsCount = (villageData.units || []).length;
+            const spellsCount = (villageData.spells || []).length;
+            const equipCount = (villageData.equipment || []).length;
+
+            const stats = [
+                { label: "Ayuntamiento", val: `TH ${thLvl}`, icon: "fa-chess-rook", color: "text-coc-gold" },
+                { label: "Héroes Aldea", val: heroesCount, icon: "fa-crown", color: "text-amber-400" },
+                { label: "Mascotas", val: petsCount, icon: "fa-paw", color: "text-emerald-400" },
+                { label: "Tropas Desbloq.", val: unitsCount, icon: "fa-khanda", color: "text-sky-400" },
+                { label: "Hechizos", val: spellsCount, icon: "fa-hat-wizard", color: "text-fuchsia-400" },
+                { label: "Equipamientos", val: equipCount, icon: "fa-shield-halved", color: "text-indigo-400" }
+            ];
+
+            document.getElementById('village-summary').innerHTML = stats.map(s => `
+                <div class="bg-slate-900/70 border border-coc-border rounded-xl p-3">
+                    <i class="fa-solid ${s.icon} ${s.color} text-base mb-1"></i>
+                    <p class="clash-title text-base sm:text-lg text-white">${s.val}</p>
+                    <p class="text-[11px] text-slate-400">${s.label}</p>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // 8. CONTROLES DE UI, FILTROS Y POCIONES
+        // ==========================================
+        function startTicker() {
+            setInterval(() => {
+                renderAll();
+            }, 1000);
+        }
+
+        function setTimeMode(mode) {
+            timeMode = mode;
+            const btnLive = document.getElementById('mode-live');
+            const btnRaw = document.getElementById('mode-raw');
+
+            if (mode === 'live') {
+                btnLive.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-coc-gold text-slate-950 shadow";
+                btnRaw.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+            } else {
+                btnRaw.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-coc-gold text-slate-950 shadow";
+                btnLive.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+            }
+            notifiedIds.clear();
+            renderAll();
+        }
+
+        function setFilter(filter) {
+            activeFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.className = "filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap";
+                } else {
+                    btn.className = "filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-coc-card text-slate-300 border border-coc-border hover:border-amber-400/50 transition cursor-pointer whitespace-nowrap";
+                }
+            });
+            renderAll();
+        }
+
+        function togglePotion(type) {
+            if (type === 'builder') {
+                builderPotionActive = !builderPotionActive;
+                const btn = document.getElementById('btn-builder-potion');
+                btn.classList.toggle('ring-2', builderPotionActive);
+                btn.classList.toggle('ring-sky-400', builderPotionActive);
+                btn.classList.toggle('bg-sky-500/30', builderPotionActive);
+                showToast(
+                    builderPotionActive ? "Poción del Constructor Activada" : "Poción del Constructor Desactivada",
+                    builderPotionActive ? "Simulando -9 horas en edificios de la Aldea Principal." : "Mostrando tiempos reales sin poción.",
+                    "info"
+                );
+            } else if (type === 'lab') {
+                labPotionActive = !labPotionActive;
+                const btn = document.getElementById('btn-lab-potion');
+                btn.classList.toggle('ring-2', labPotionActive);
+                btn.classList.toggle('ring-fuchsia-400', labPotionActive);
+                btn.classList.toggle('bg-fuchsia-500/30', labPotionActive);
+                showToast(
+                    labPotionActive ? "Poción de Investigación Activada" : "Poción de Investigación Desactivada",
+                    labPotionActive ? "Simulando -23 horas en el Laboratorio." : "Mostrando tiempos reales sin poción.",
+                    "info"
+                );
+            }
+            renderAll();
+        }
+
+        // ==========================================
+        // 9. MODALES: JSON Y TEMPORIZADORES MANUALES
+        // ==========================================
+        function toggleJsonModal(show) {
+            const modal = document.getElementById('json-modal');
+            document.getElementById('json-error').classList.add('hidden');
+            modal.classList.toggle('hidden', !show);
+        }
+
+        function importNewJson() {
+            const raw = document.getElementById('json-input').value.trim();
+            const errBox = document.getElementById('json-error');
+            try {
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== 'object') {
+                    throw new Error("El formato JSON no es válido.");
+                }
+                villageData = parsed;
+                appLoadUnix = Math.floor(Date.now() / 1000);
+                notifiedIds.clear();
+
+                localStorage.setItem('coc_tracker_json', JSON.stringify(villageData));
+                localStorage.setItem('coc_tracker_load_unix', appLoadUnix.toString());
+
+                parseVillageData();
+                toggleJsonModal(false);
+                showToast("¡Aldea Actualizada!", `Se cargaron ${activeUpgrades.length} mejoras activas para ${villageData.tag || 'tu aldea'}.`, "success");
+            } catch (err) {
+                errBox.textContent = "Error al leer JSON: " + err.message;
+                errBox.classList.remove('hidden');
+            }
+        }
+
+        function resetToDefaultJson() {
+            document.getElementById('json-input').value = JSON.stringify(DEFAULT_USER_JSON, null, 2);
+            importNewJson();
+        }
+
+        function toggleCustomTimerModal(show) {
+            document.getElementById('custom-timer-modal').classList.toggle('hidden', !show);
+        }
+
+        function addCustomTimer() {
+            const name = document.getElementById('custom-name').value.trim() || "Mejora Personalizada";
+            const category = document.getElementById('custom-category').value;
+            const days = parseInt(document.getElementById('custom-days').value, 10) || 0;
+            const hours = parseInt(document.getElementById('custom-hours').value, 10) || 0;
+            const mins = parseInt(document.getElementById('custom-mins').value, 10) || 0;
+
+            const totalSeconds = (days * 86400) + (hours * 3600) + (mins * 60);
+            if (totalSeconds <= 0) {
+                showToast("Tiempo inválido", "Ingresa al menos 1 minuto para el temporizador.", "warning");
+                return;
+            }
+
+            const labelMap = {
+                home: "Aldea Principal (Manual)",
+                lab: "Laboratorio (Manual)",
+                builder_base: "Base Constructor (Manual)"
+            };
+
+            const newTimer = {
+                id: `custom_${Date.now()}`,
+                name: name,
+                icon: "fa-stopwatch",
+                category: category,
+                subLabel: labelMap[category],
+                totalDuration: totalSeconds,
+                targetUnix: Math.floor(Date.now() / 1000) + totalSeconds,
+                isCustom: true
+            };
+
+            customTimers.push(newTimer);
+            localStorage.setItem('coc_tracker_custom', JSON.stringify(customTimers));
+            updateCounts();
+            renderAll();
+            toggleCustomTimerModal(false);
+            document.getElementById('custom-name').value = "";
+            showToast("Temporizador Creado", `Te avisaremos cuando "${name}" finalice.`, "success");
+        }
+
+        function deleteCustomTimer(id) {
+            customTimers = customTimers.filter(t => t.id !== id);
+            localStorage.setItem('coc_tracker_custom', JSON.stringify(customTimers));
+            updateCounts();
+            renderAll();
+        }
+
+        // ==========================================
+        // 10. SISTEMA DE NOTIFICACIONES PUSH Y SONIDO CLASH
+        // ==========================================
+        function updateNotificationButtonUI() {
+            const btnText = document.getElementById('notify-btn-text');
+            if (!("Notification" in window)) {
+                btnText.textContent = "Sin Soporte Push";
+                return;
+            }
+            if (Notification.permission === "granted") {
+                btnText.textContent = "Alertas Activas";
+            } else if (Notification.permission === "denied") {
+                btnText.textContent = "Alertas Bloqueadas";
+            } else {
+                btnText.textContent = "Activar Alertas";
+            }
+        }
+
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                showToast("No soportado", "Tu navegador no soporta notificaciones de escritorio.", "warning");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                updateNotificationButtonUI();
+                if (permission === "granted") {
+                    playClashChime();
+                    showToast("¡Notificaciones Activadas!", "Recibirás un aviso sonoro y visual cuando termine una mejora.", "success");
+                    new Notification("Notificador CoC Activado", {
+                        body: "¡Listo! Te avisaremos cuando tus constructores terminen."
+                    });
+                } else {
+                    showToast("Permiso Denegado", "Activa las notificaciones en la configuración de tu navegador para recibir alertas.", "warning");
+                }
+            });
+        }
+
+        function triggerUpgradeFinishedAlert(item) {
+            playClashChime();
+            const title = `¡Mejora Completada! (${item.name})`;
+            const body = item.isCustom 
+                ? `Tu temporizador "${item.name}" ha finalizado.`
+                : `${item.name} alcanzó el Nivel ${item.targetLvl}. ¡Constructor libre!`;
+
+            showToast(title, body, "success");
+
+            if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                    new Notification(title, { body });
+                } catch (e) {
+                    console.warn("Error enviando notificación nativa:", e);
+                }
+            }
+        }
+
+        function testNotification() {
+            playClashChime();
+            showToast("¡Prueba de Alerta CoC!", "Así sonará y se verá el aviso cuando termine una mejora.", "success");
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("Notificador CoC - Prueba", {
+                    body: "¡Un constructor ha terminado su trabajo en la aldea!"
+                });
+            }
+        }
+
+        // Sonido estilo fanfarria / campana épica con Web Audio API
+        function playClashChime() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioCtx();
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // Do5, Mi5, Sol5, Do6
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.11);
+
+                    gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.11);
+                    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + idx * 0.11 + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.11 + 0.45);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + idx * 0.11);
+                    osc.stop(ctx.currentTime + idx * 0.11 + 0.5);
+                });
+            } catch (e) {
+                console.warn("AudioContext bloqueado hasta interacción:", e);
+            }
+        }
+
+        // Toast visual en pantalla
+        function showToast(title, message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const borderColors = {
+                success: "border-emerald-400 bg-slate-900/95",
+                warning: "border-amber-400 bg-slate-900/95",
+                info: "border-sky-400 bg-slate-900/95"
+            };
+            const iconColors = {
+                success: "fa-circle-check text-emerald-400",
+                warning: "fa-triangle-exclamation text-amber-400",
+                info: "fa-bell text-coc-gold"
+            };
+
+            toast.className = `pointer-events-auto border-l-4 ${borderColors[type] || borderColors.info} rounded-xl p-3.5 shadow-2xl backdrop-blur-md flex items-start gap-3 transition-all duration-300 transform translate-x-0`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconColors[type] || iconColors.info} text-lg mt-0.5"></i>
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-xs sm:text-sm text-white">${title}</p>
+                    <p class="text-xs text-slate-300 mt-0.5">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-white text-xs cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 5500);
+        }
+    </script>
+</body>
+</html>
