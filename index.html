@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notificador de Mejoras CoC</title>
 
-    <!-- Cabeceras PWA integradas para instalación directa en móvil -->
+    <!-- Cabeceras PWA listas para GitHub Pages -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
     <meta name="theme-color" content="#0f172a">
@@ -13,20 +13,25 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CoC Timer">
 
-    <!-- Registro seguro del Service Worker -->
+    <!-- Registro del Service Worker para notificaciones del sistema -->
     <script>
+        let swRegistration = null;
         if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(() => {});
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => {
+                        swRegistration = reg;
+                    })
+                    .catch(() => {});
             });
         }
     </script>
 
-    <!-- Tailwind CSS & Fuentes -->
+    <!-- Tailwind CSS y Fuentes Cinzel + Plus Jakarta Sans -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lilita+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script>
@@ -35,26 +40,24 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        clash: ['"Lilita One"', 'cursive', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        clash: ['"Cinzel"', 'serif'],
                     },
                     colors: {
                         coc: {
-                            bg: '#0b0f17',
-                            card: '#131926',
-                            cardHover: '#192233',
-                            gold: '#f5b027',
-                            goldDark: '#b87a08',
-                            elixir: '#e040fb',
-                            builder: '#38bdf8',
-                            green: '#10b981',
-                            border: '#243047'
+                            bg: '#0f172a',
+                            card: '#162033',
+                            cardHover: '#1d2940',
+                            gold: '#f59e0b',
+                            goldLight: '#fbbf24',
+                            goldDark: '#b45309',
+                            border: '#293548'
                         }
                     },
                     boxShadow: {
-                        'coc-gold': '0 4px 0 #9a6300, 0 8px 16px rgba(0,0,0,0.45)',
-                        'coc-green': '0 4px 0 #047857, 0 8px 16px rgba(0,0,0,0.4)',
-                        'coc-slate': '0 3px 0 #090d14, 0 6px 12px rgba(0,0,0,0.35)',
+                        'coc-gold': '0 4px 0 #92400e, 0 8px 18px rgba(0, 0, 0, 0.45)',
+                        'coc-green': '0 4px 0 #065f46, 0 8px 18px rgba(0, 0, 0, 0.4)',
+                        'coc-slate': '0 3px 0 #090e1a, 0 6px 14px rgba(0, 0, 0, 0.35)',
                     }
                 }
             }
@@ -63,16 +66,16 @@
 
     <style>
         body {
-            background-color: #0b0f17;
+            background-color: #0f172a;
             background-image:
-                radial-gradient(circle at 10% 10%, rgba(245, 176, 39, 0.07) 0%, transparent 42%),
-                radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.06) 0%, transparent 42%);
-            color: #f1f5f9;
+                radial-gradient(circle at 12% 8%, rgba(245, 158, 11, 0.09) 0%, transparent 42%),
+                radial-gradient(circle at 88% 92%, rgba(56, 189, 248, 0.06) 0%, transparent 42%);
+            color: #f8fafc;
         }
         .clash-title {
-            font-family: 'Lilita One', cursive, sans-serif;
-            letter-spacing: 0.03em;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.75);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.02em;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
         }
         .btn-coc {
             transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
@@ -81,7 +84,6 @@
             transform: translateY(3px);
             box-shadow: none !important;
         }
-        /* Barra de desplazamiento horizontal limpia para pestañas en móvil */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -89,52 +91,84 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        @keyframes pulse-emerald {
-            0%, 100% { border-color: rgba(16, 185, 129, 0.95); box-shadow: 0 0 18px rgba(16, 185, 129, 0.28); }
-            50% { border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 0 6px rgba(16, 185, 129, 0.1); }
+
+        /* Animación crítica de parpadeo rojo cada 0.8s para pestañas con mejoras completadas */
+        @keyframes blinkRedTab {
+            0%, 100% {
+                background-color: #dc2626;
+                border-color: #ef4444;
+                color: #ffffff;
+                box-shadow: 0 0 18px rgba(239, 68, 68, 0.85), inset 0 0 8px rgba(254, 202, 202, 0.35);
+            }
+            50% {
+                background-color: #7f1d1d;
+                border-color: #ef4444;
+                color: #fecaca;
+                box-shadow: 0 0 6px rgba(127, 29, 29, 0.5);
+            }
         }
-        @keyframes pulse-amber {
-            0%, 100% { border-color: rgba(245, 176, 39, 0.9); box-shadow: 0 0 15px rgba(245, 176, 39, 0.25); }
-            50% { border-color: rgba(245, 176, 39, 0.35); box-shadow: 0 0 5px rgba(245, 176, 39, 0.08); }
+        .village-tab-blink-red {
+            animation: blinkRedTab 0.8s infinite ease-in-out;
         }
-        .glow-completed {
-            animation: pulse-emerald 2s infinite;
+
+        @keyframes pulseRedCard {
+            0%, 100% {
+                border-color: rgba(239, 68, 68, 0.95);
+                box-shadow: 0 0 20px rgba(239, 68, 68, 0.32);
+            }
+            50% {
+                border-color: rgba(239, 68, 68, 0.35);
+                box-shadow: 0 0 6px rgba(239, 68, 68, 0.1);
+            }
         }
-        .glow-prealert {
-            animation: pulse-amber 2.2s infinite;
+        .card-completed-red {
+            animation: pulseRedCard 1.2s infinite ease-in-out;
+        }
+
+        @keyframes pulsePreAlert {
+            0%, 100% {
+                border-color: rgba(245, 158, 11, 0.95);
+                box-shadow: 0 0 16px rgba(245, 158, 11, 0.28);
+            }
+            50% {
+                border-color: rgba(245, 158, 11, 0.35);
+                box-shadow: 0 0 5px rgba(245, 158, 11, 0.08);
+            }
+        }
+        .card-prealert-amber {
+            animation: pulsePreAlert 1.8s infinite ease-in-out;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-coc-gold selection:text-slate-950">
 
-    <!-- Contenedor de Notificaciones Flotantes (Toasts) -->
+    <!-- Contenedor de Notificaciones Flotantes Internas (Toasts) -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
     <!-- Encabezado Principal -->
-    <header class="sticky top-0 z-30 bg-coc-card/95 backdrop-blur-md border-b border-coc-border shadow-xl">
+    <header class="sticky top-0 z-30 bg-coc-card/95 backdrop-blur-md border-b border-coc-border shadow-2xl">
         <div class="max-w-6xl mx-auto px-3 sm:px-5 pt-3 pb-2.5 space-y-2.5">
-            <!-- Fila Superior: Logo + Acciones Globales -->
+            <!-- Fila Superior: Identidad + Botones Principales -->
             <div class="flex items-center justify-between gap-2 flex-wrap">
                 <div class="flex items-center gap-2.5">
                     <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center border-2 border-amber-200 text-slate-950 text-lg sm:text-xl shadow-md shrink-0">
                         <i class="fa-solid fa-hammer"></i>
                     </div>
                     <div>
-                        <h1 class="clash-title text-lg sm:text-2xl text-coc-gold leading-tight">Notificador de Mejoras CoC</h1>
-                        <p class="text-[11px] sm:text-xs text-slate-400">Multi-Aldea • Pase de Oro • Alertas Anticipadas</p>
+                        <h1 class="clash-title text-base sm:text-xl font-black text-coc-gold leading-tight">Notificador de Mejoras CoC</h1>
+                        <p class="text-[11px] sm:text-xs text-slate-400">Multi-Aldea • Alertas Anticipadas • Calendario Nativo</p>
                     </div>
                 </div>
 
-                <!-- Botones de Alerta y JSON -->
                 <div class="flex items-center gap-2 flex-wrap">
                     <button id="btn-notify-perm" onclick="requestNotificationPermission()" class="btn-coc px-3 py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 font-extrabold text-xs shadow-coc-green flex items-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-bell"></i>
                         <span id="notify-btn-text">Activar Alertas</span>
                     </button>
 
-                    <button onclick="testNotification()" title="Probar sonido y notificación push" class="btn-coc px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-coc-border text-slate-200 font-semibold text-xs shadow-coc-slate flex items-center gap-1.5 cursor-pointer">
+                    <button onclick="testNotification()" title="Probar sonido y notificación del sistema" class="btn-coc px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-coc-border text-slate-200 font-semibold text-xs shadow-coc-slate flex items-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-volume-high text-coc-gold"></i>
-                        <span class="hidden sm:inline">Probar Alerta</span>
+                        <span>Probar Alerta</span>
                     </button>
 
                     <button onclick="openJsonModal()" class="btn-coc px-3 py-2 rounded-xl bg-gradient-to-b from-amber-400 to-amber-600 text-slate-950 font-extrabold text-xs shadow-coc-gold flex items-center gap-1.5 cursor-pointer">
@@ -144,10 +178,10 @@
                 </div>
             </div>
 
-            <!-- Barra Horizontal Desplazable de Pestañas de Aldeas -->
-            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1 pb-0.5 border-t border-coc-border/60">
+            <!-- Barra Horizontal de Pestañas Multi-Aldea -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1.5 pb-0.5 border-t border-coc-border/70">
                 <div id="village-tabs-list" class="flex items-center gap-2">
-                    <!-- Pestañas inyectadas dinámicamente -->
+                    <!-- Pestañas generadas dinámicamente -->
                 </div>
 
                 <button onclick="openNewVillageModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-coc-gold/60 bg-coc-gold/10 hover:bg-coc-gold/20 text-coc-gold font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 transition cursor-pointer">
@@ -161,17 +195,17 @@
     <!-- Contenido Principal -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-5 py-5 space-y-5">
 
-        <!-- Cabecera de Aldea Activa + Acciones de Pestaña -->
-        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+        <!-- Cabecera de Aldea Activa -->
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
             <div class="flex items-center gap-3 min-w-0">
-                <div class="w-10 h-10 rounded-xl bg-slate-800 border border-coc-gold/40 flex items-center justify-center text-coc-gold shrink-0">
+                <div class="w-10 h-10 rounded-xl bg-slate-900 border border-coc-gold/40 flex items-center justify-center text-coc-gold shrink-0">
                     <i class="fa-solid fa-fort-awesome text-lg"></i>
                 </div>
                 <div class="min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
                         <h2 id="active-village-title" class="font-extrabold text-base sm:text-lg text-white truncate">Aldea Principal</h2>
                         <span id="active-village-tag" class="px-2 py-0.5 rounded-md bg-slate-900 border border-coc-gold/40 text-coc-gold font-mono text-xs font-bold">#Q8Y9PQRP8</span>
-                        <button onclick="openRenameVillageModal()" title="Renombrar aldea" class="text-slate-400 hover:text-coc-gold text-xs p-1 transition cursor-pointer">
+                        <button onclick="openRenameVillageModal()" title="Renombrar aldea" class="text-slate-400 hover:text-coc-gold text-xs p-1.5 rounded-lg hover:bg-slate-800 transition cursor-pointer">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                     </div>
@@ -191,93 +225,28 @@
             </div>
         </section>
 
-        <!-- Panel 1: Pase de Oro (Descuentos de Constructor e Investigación) -->
-        <section class="bg-coc-card border border-coc-gold/40 rounded-2xl p-4 sm:p-5 shadow-md space-y-4">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-coc-gold shrink-0">
-                        <i class="fa-solid fa-crown"></i>
-                    </div>
-                    <div>
-                        <h3 class="clash-title text-base sm:text-lg text-coc-gold">Pase de Oro (Descuentos de Tiempo)</h3>
-                        <p class="text-xs text-slate-300">
-                            El JSON de CoC no incluye el nivel del Pase (sus tiempos ya vienen descontados). Selecciona tu % aquí para calcular nuevas mejoras o ajustar las actuales.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Selectores de Potencia -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                <!-- Potencia de Constructor -->
-                <div class="bg-slate-900/80 border border-coc-border rounded-xl p-3.5 space-y-2.5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                            <i class="fa-solid fa-hammer"></i>
-                            <span>Potencia de Constructor</span>
-                        </span>
-                        <span class="text-[11px] text-slate-400">Aldea y Base Constructor</span>
-                    </div>
-                    <div id="builder-boost-pills" class="grid grid-cols-4 gap-2">
-                        <!-- Pills 0%, 10%, 15%, 20% -->
-                    </div>
-                </div>
-
-                <!-- Potencia de Investigación -->
-                <div class="bg-slate-900/80 border border-coc-border rounded-xl p-3.5 space-y-2.5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-fuchsia-300 flex items-center gap-1.5">
-                            <i class="fa-solid fa-flask"></i>
-                            <span>Potencia de Investigación</span>
-                        </span>
-                        <span class="text-[11px] text-slate-400">Laboratorio y Mascotas</span>
-                    </div>
-                    <div id="research-boost-pills" class="grid grid-cols-4 gap-2">
-                        <!-- Pills 0%, 10%, 15%, 20% -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Toggle y Acción para Recalcular Timers Activos -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-coc-border/60">
-                <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
-                    <input id="toggle-auto-recalc" type="checkbox" onchange="toggleAutoRecalcBoost(this.checked)" class="w-4 h-4 rounded accent-amber-400 cursor-pointer">
-                    <span class="text-xs font-medium text-slate-200">
-                        Recalcular timers activos automáticamente al cambiar de %
-                    </span>
-                </label>
-
-                <button onclick="recalculateAllActiveTimersNow()" class="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 font-bold text-xs flex items-center gap-1.5 w-fit transition cursor-pointer">
-                    <i class="fa-solid fa-calculator"></i>
-                    <span>Recalcular timers activos con este %</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Panel 2: Configuración de Anticipación de Notificación (Minutos) -->
-        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 sm:p-5 shadow-md space-y-3.5">
+        <!-- Barra de Configuración de Anticipación de Notificaciones -->
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 sm:p-5 shadow-lg space-y-3.5">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-coc-gold shrink-0">
                         <i class="fa-solid fa-bell-concierge"></i>
                     </div>
                     <div>
-                        <h3 class="clash-title text-base sm:text-lg text-white">Anticipación de Notificación</h3>
-                        <p class="text-xs text-slate-400">Elige cuántos minutos antes de finalizar deseas recibir el aviso</p>
+                        <h3 class="clash-title text-sm sm:text-base font-bold text-white">Anticipación de Notificación</h3>
+                        <p class="text-xs text-slate-400">Indica cuántos minutos antes de terminar debe llegar el aviso (también se aplica al botón Calendario)</p>
                     </div>
                 </div>
 
-                <!-- Toggle avisar también al llegar a 00:00:00 -->
                 <label class="inline-flex items-center gap-2 bg-slate-900/90 border border-coc-border px-3 py-2 rounded-xl cursor-pointer select-none w-fit">
-                    <input id="toggle-notify-zero" type="checkbox" onchange="toggleNotifyAtZero(this.checked)" class="w-4 h-4 rounded accent-emerald-400 cursor-pointer">
+                    <input id="toggle-notify-zero" type="checkbox" onchange="toggleNotifyAtZero(this.checked)" class="w-4 h-4 rounded accent-amber-400 cursor-pointer">
                     <span class="text-xs font-semibold text-slate-200">Avisar también al llegar a 00:00:00</span>
                 </label>
             </div>
 
-            <!-- Chips de minutos rápidos + Input personalizado -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                 <div class="flex items-center gap-1.5 flex-wrap" id="lead-time-chips">
-                    <!-- Chips inyectados por JS -->
+                    <!-- Botones rápidos: 0, 5, 10, 15, 30, 60 min -->
                 </div>
 
                 <div class="flex items-center gap-2 bg-slate-900 border border-coc-border rounded-xl px-3 py-1.5 w-fit">
@@ -288,34 +257,33 @@
             </div>
         </section>
 
-        <!-- Barra de Pociones Rápidas y Resumen KPI -->
+        <!-- KPIs y Simulador de Pociones -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-3">
-            <!-- KPIs Compactos (8 cols) -->
             <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div class="bg-coc-card border border-coc-gold/40 rounded-2xl p-3.5">
                     <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Próxima en Terminar</p>
-                    <p id="kpi-next-timer" class="clash-title text-lg sm:text-xl text-coc-gold mt-0.5">--:--:--</p>
+                    <p id="kpi-next-timer" class="clash-title text-base sm:text-lg font-extrabold text-coc-gold mt-0.5">--:--:--</p>
                     <p id="kpi-next-name" class="text-xs text-slate-300 truncate mt-0.5">Sin mejoras</p>
                 </div>
 
                 <div class="bg-coc-card border border-coc-border rounded-2xl p-3.5">
                     <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Constructores</p>
-                    <p id="kpi-builders" class="clash-title text-lg sm:text-xl text-white mt-0.5">0 Activos</p>
+                    <p id="kpi-builders" class="clash-title text-base sm:text-lg font-extrabold text-white mt-0.5">0 Activos</p>
                     <p id="kpi-builders-sub" class="text-xs text-amber-400 truncate mt-0.5">Aldea y Base</p>
                 </div>
 
                 <div class="col-span-2 sm:col-span-1 bg-coc-card border border-coc-border rounded-2xl p-3.5">
-                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Investigación / Lab</p>
-                    <p id="kpi-research" class="clash-title text-lg sm:text-xl text-fuchsia-400 mt-0.5">Libre</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Laboratorio</p>
+                    <p id="kpi-research" class="clash-title text-base sm:text-lg font-extrabold text-fuchsia-400 mt-0.5">Libre</p>
                     <p id="kpi-research-sub" class="text-xs text-slate-400 truncate mt-0.5">Sin investigación</p>
                 </div>
             </div>
 
-            <!-- Pociones Rápidas (4 cols) -->
+            <!-- Pociones Rápidas -->
             <div class="lg:col-span-4 bg-coc-card border border-coc-border rounded-2xl p-3.5 flex flex-col justify-between gap-2">
                 <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                     <i class="fa-solid fa-wand-magic-sparkles text-coc-gold"></i>
-                    <span>Aplicar Poción Instantánea</span>
+                    <span>Simular Poción</span>
                 </p>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="applyPotionDiscount('builder', 9)" class="btn-coc px-2.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/40 text-sky-300 text-xs font-bold flex flex-col items-center justify-center text-center cursor-pointer">
@@ -330,7 +298,7 @@
             </div>
         </section>
 
-        <!-- Filtros por Categoría -->
+        <!-- Barra de Filtros y Limpieza de Completadas -->
         <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 w-full sm:w-auto">
                 <button onclick="setCategoryFilter('all')" data-cat="all" class="cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap">
@@ -340,16 +308,22 @@
                     <i class="fa-solid fa-hammer text-amber-400 mr-1"></i> Constructor (<span id="count-builder">0</span>)
                 </button>
                 <button onclick="setCategoryFilter('research')" data-cat="research" class="cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-card text-slate-300 border border-coc-border transition cursor-pointer whitespace-nowrap">
-                    <i class="fa-solid fa-flask text-fuchsia-400 mr-1"></i> Laboratorio/Mascotas (<span id="count-research">0</span>)
+                    <i class="fa-solid fa-flask text-fuchsia-400 mr-1"></i> Laboratorio (<span id="count-research">0</span>)
                 </button>
                 <button onclick="setCategoryFilter('builder_base')" data-cat="builder_base" class="cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-card text-slate-300 border border-coc-border transition cursor-pointer whitespace-nowrap">
                     <i class="fa-solid fa-gear text-sky-400 mr-1"></i> Base Constructor (<span id="count-bb">0</span>)
                 </button>
             </div>
 
-            <div class="text-xs text-slate-400 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span id="active-alert-summary">Avisando 15 min antes</span>
+            <div class="flex items-center gap-2 flex-wrap">
+                <button id="btn-clear-completed" onclick="clearCompletedTimers()" class="hidden px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition cursor-pointer">
+                    <i class="fa-solid fa-broom"></i>
+                    <span>Limpiar completadas</span>
+                </button>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span id="active-alert-summary">Avisando 15 min antes</span>
+                </div>
             </div>
         </div>
 
@@ -359,15 +333,15 @@
         </section>
 
         <!-- Sección de Asistentes de la Aldea -->
-        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 sm:p-5 shadow-md">
+        <section class="bg-coc-card border border-coc-border rounded-2xl p-4 sm:p-5 shadow-lg">
             <div class="flex items-center justify-between mb-3.5">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300">
                         <i class="fa-solid fa-user-astronaut"></i>
                     </div>
                     <div>
-                        <h3 class="clash-title text-base sm:text-lg text-white">Asistentes de la Aldea</h3>
-                        <p class="text-xs text-slate-400">Enfriamiento (Cooldown) y disponibilidad</p>
+                        <h3 class="clash-title text-sm sm:text-base font-bold text-white">Asistentes de la Aldea</h3>
+                        <p class="text-xs text-slate-400">Enfriamiento en tiempo real y disponibilidad</p>
                     </div>
                 </div>
             </div>
@@ -384,27 +358,27 @@
     </footer>
 
     <!-- ===================================================================== -->
-    <!-- MODALES (SIN ALERT NI CONFIRM NATIVOS)                                -->
+    <!-- MODALES PERSONALIZADOS                                                -->
     <!-- ===================================================================== -->
 
     <!-- Modal 1: Actualizar JSON de la Aldea Actual -->
     <div id="modal-json" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-coc-card border-2 border-coc-gold/60 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="clash-title text-lg sm:text-xl text-coc-gold flex items-center gap-2">
+                <h3 class="clash-title text-base sm:text-lg font-bold text-coc-gold flex items-center gap-2">
                     <i class="fa-solid fa-file-code"></i>
-                    <span>Importar JSON en Aldea Actual</span>
+                    <span>Actualizar JSON de Aldea</span>
                 </h3>
                 <button onclick="closeModal('modal-json')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <p class="text-xs text-slate-300">
-                Pega el JSON exportado desde <span class="text-coc-gold font-semibold">Ajustes &gt; Más ajustes &gt; Exportar datos de la aldea</span> en Clash of Clans. Se reemplazarán los temporizadores de <strong id="json-target-village-name" class="text-white">esta aldea</strong>.
+                Pega el JSON exportado desde <span class="text-coc-gold font-semibold">Ajustes &gt; Más ajustes &gt; Exportar datos de la aldea</span> en Clash of Clans. Se actualizarán los temporizadores de <strong id="json-target-village-name" class="text-white">esta aldea</strong>.
             </p>
             <textarea id="json-update-input" rows="8" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl p-3 text-xs font-mono text-emerald-300 focus:outline-none" placeholder='{"tag":"#Q8Y9PQRP8","timestamp":...}'></textarea>
             <div id="json-update-error" class="hidden text-xs text-rose-300 bg-rose-950/60 border border-rose-500/40 rounded-lg p-2.5"></div>
-            <div class="flex items-center justify-between gap-2 pt-1">
+            <div class="flex items-center justify-between gap-2 pt-1 flex-wrap">
                 <button onclick="restoreDefaultVillage1()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
                     Restaurar Aldea #Q8Y9PQRP8
                 </button>
@@ -424,7 +398,7 @@
     <div id="modal-new-village" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-coc-card border-2 border-coc-gold/60 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="clash-title text-lg sm:text-xl text-coc-gold flex items-center gap-2">
+                <h3 class="clash-title text-base sm:text-lg font-bold text-coc-gold flex items-center gap-2">
                     <i class="fa-solid fa-plus-circle"></i>
                     <span>Añadir Nueva Aldea</span>
                 </h3>
@@ -433,7 +407,6 @@
                 </button>
             </div>
 
-            <!-- Selector de método -->
             <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-coc-border">
                 <button id="new-v-tab-json" onclick="switchNewVillageMode('json')" class="py-1.5 rounded-lg text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer">
                     Pegar JSON de CoC
@@ -455,32 +428,9 @@
                     </div>
                 </div>
 
-                <!-- Sección JSON -->
                 <div id="new-village-json-section">
                     <label class="block text-xs font-semibold text-slate-300 mb-1">JSON Exportado de Clash of Clans</label>
                     <textarea id="new-village-json" rows="6" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl p-3 text-xs font-mono text-emerald-300 focus:outline-none" placeholder='{"tag":"#...","buildings":[...]}'></textarea>
-                </div>
-
-                <!-- Sección Pase Inicial -->
-                <div class="grid grid-cols-2 gap-2.5">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Pase Constructor (%)</label>
-                        <select id="new-village-b-boost" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
-                            <option value="0">0% (Sin Pase)</option>
-                            <option value="10">10%</option>
-                            <option value="15">15%</option>
-                            <option value="20">20%</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Pase Investigación (%)</label>
-                        <select id="new-village-r-boost" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
-                            <option value="0">0% (Sin Pase)</option>
-                            <option value="10">10%</option>
-                            <option value="15">15%</option>
-                            <option value="20">20%</option>
-                        </select>
-                    </div>
                 </div>
             </div>
 
@@ -501,7 +451,7 @@
     <div id="modal-add-timer" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-coc-card border-2 border-emerald-400/50 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="clash-title text-lg sm:text-xl text-white flex items-center gap-2">
+                <h3 class="clash-title text-base sm:text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-stopwatch text-emerald-400"></i>
                     <span>Añadir Mejora Manual</span>
                 </h3>
@@ -523,37 +473,31 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría (Aplica descuento del Pase)</label>
-                    <select id="manual-timer-cat" onchange="updateManualTimerPreview()" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría</label>
+                    <select id="manual-timer-cat" class="w-full bg-slate-950 border border-coc-border focus:border-coc-gold rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
                         <option value="builder">Aldea Principal (Constructor)</option>
                         <option value="research">Laboratorio (Investigación)</option>
                         <option value="pet">Caseta de Mascotas (Investigación)</option>
-                        <option value="builder_base">Base del Constructor (Constructor)</option>
+                        <option value="builder_base">Base del Constructor</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Duración base (sin descuento del Pase)</label>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Duración restante</label>
                     <div class="grid grid-cols-3 gap-2">
                         <div>
                             <span class="block text-[10px] text-slate-400 mb-0.5">Días</span>
-                            <input id="manual-timer-days" type="number" min="0" value="1" oninput="updateManualTimerPreview()" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
+                            <input id="manual-timer-days" type="number" min="0" value="1" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
                         </div>
                         <div>
                             <span class="block text-[10px] text-slate-400 mb-0.5">Horas</span>
-                            <input id="manual-timer-hours" type="number" min="0" max="23" value="0" oninput="updateManualTimerPreview()" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
+                            <input id="manual-timer-hours" type="number" min="0" max="23" value="0" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
                         </div>
                         <div>
                             <span class="block text-[10px] text-slate-400 mb-0.5">Minutos</span>
-                            <input id="manual-timer-mins" type="number" min="0" max="59" value="0" oninput="updateManualTimerPreview()" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
+                            <input id="manual-timer-mins" type="number" min="0" max="59" value="0" class="w-full bg-slate-950 border border-coc-border rounded-xl px-3 py-2 text-xs text-white">
                         </div>
                     </div>
-                </div>
-
-                <!-- Vista previa de cálculo con Pase de Oro -->
-                <div id="manual-timer-preview" class="bg-slate-900/90 border border-coc-gold/30 rounded-xl p-2.5 text-xs text-slate-300 flex items-center justify-between">
-                    <span>Tiempo final con Pase:</span>
-                    <span id="manual-preview-val" class="font-bold text-coc-gold">1d 00h 00m</span>
                 </div>
             </div>
 
@@ -571,7 +515,7 @@
     <!-- Modal 4: Renombrar Aldea -->
     <div id="modal-rename-village" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-coc-card border border-coc-border rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
-            <h3 class="clash-title text-lg text-white">Renombrar Aldea</h3>
+            <h3 class="clash-title text-base font-bold text-white">Renombrar Aldea</h3>
             <div class="space-y-2.5">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">Nombre</label>
@@ -594,7 +538,7 @@
         <div class="bg-coc-card border border-rose-500/50 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
             <div class="flex items-center gap-2.5 text-rose-400">
                 <i class="fa-solid fa-triangle-exclamation text-xl"></i>
-                <h3 class="clash-title text-lg text-white">¿Eliminar esta aldea?</h3>
+                <h3 class="clash-title text-base font-bold text-white">¿Eliminar esta aldea?</h3>
             </div>
             <p class="text-xs text-slate-300">
                 Se borrará la pestaña <strong id="delete-village-confirm-name" class="text-white"></strong> junto con todos sus temporizadores guardados. Esta acción no se puede deshacer.
@@ -652,6 +596,7 @@
             1000089: { name: "Torre Multi-Equipo", icon: "fa-tower-observation" },
             1000093: { name: "Escupidor de Fuego", icon: "fa-dragon" },
             1000097: { name: "Defensa Modular", icon: "fa-cubes" },
+            1000106: { name: "Defensa Especial", icon: "fa-shield-virus" },
 
             // Edificios Base del Constructor
             1000034: { name: "Taller del Constructor", icon: "fa-house-chimney" },
@@ -681,7 +626,7 @@
             1000063: { name: "Torre de Curación", icon: "fa-heart-pulse" },
             1000065: { name: "Arco X (Constructor)", icon: "fa-crosshairs" },
 
-            // Tropas & Máquinas (4000xxx)
+            // Tropas y Máquinas (4000xxx)
             4000000: { name: "Bárbaro", icon: "fa-khanda" },
             4000001: { name: "Arquera", icon: "fa-bullseye" },
             4000002: { name: "Duende", icon: "fa-sack-dollar" },
@@ -701,6 +646,16 @@
             4000022: { name: "Lanzarrocas", icon: "fa-bowling-ball" },
             4000023: { name: "Bebé Dragón", icon: "fa-dragon" },
             4000024: { name: "Minero", icon: "fa-helmet-safety" },
+            4000031: { name: "Bárbaro Furioso", icon: "fa-khanda" },
+            4000032: { name: "Arquera Furtiva", icon: "fa-bullseye" },
+            4000033: { name: "Gigante Boxeador", icon: "fa-hand-fist" },
+            4000034: { name: "Esbirro Beta", icon: "fa-ghost" },
+            4000035: { name: "Bombardero", icon: "fa-bomb" },
+            4000036: { name: "Bebé Dragón (Constructor)", icon: "fa-dragon" },
+            4000037: { name: "Cañón con Ruedas", icon: "fa-dharmachakra" },
+            4000038: { name: "Bruja Nocturna", icon: "fa-skull" },
+            4000041: { name: "Globo Esquelético", icon: "fa-cloud" },
+            4000042: { name: "Súper P.E.K.K.A", icon: "fa-robot" },
             4000051: { name: "Destructor de Muros", icon: "fa-truck-monster" },
             4000052: { name: "Dirigible Bélico", icon: "fa-jet-fighter" },
             4000053: { name: "Yeti", icon: "fa-icicles" },
@@ -775,33 +730,29 @@
                 subLabel,
                 totalSeconds: seconds,
                 endTimeMs: now + seconds * 1000,
-                appliedBoostPct: 0,
                 helperAssigned,
                 preNotified: false,
                 doneNotified: false
             });
 
             return {
-                id: "village_default_1",
+                id: "village_main_q8y9pqrp8",
                 name: "Aldea Principal",
                 tag: "#Q8Y9PQRP8",
-                builderBoost: 0,
-                researchBoost: 0,
-                autoRecalcOnBoostChange: true,
                 timers: [
-                    makeTimer("v1_t1", "Ayuntamiento", "fa-chess-rook", 17, 18, "builder", "Aldea Principal", 205227, "Aprendiz de Constructor (Nvl 5)"),
-                    makeTimer("v1_t2", "Torre de Magos #1", "fa-wand-sparkles", 12, 13, "builder", "Aldea Principal", 49484, null),
-                    makeTimer("v1_t3", "Torre de Magos #2", "fa-wand-sparkles", 11, 12, "builder", "Aldea Principal", 9673, null),
-                    makeTimer("v1_t4", "Torre de Magos #3", "fa-wand-sparkles", 12, 13, "builder", "Aldea Principal", 128874, null),
-                    makeTimer("v1_t5", "Torre de Magos #4", "fa-wand-sparkles", 11, 12, "builder", "Aldea Principal", 88513, null),
-                    makeTimer("v1_t6", "Dragón", "fa-dragon", 9, 10, "research", "Laboratorio", 64323, "Ayudante de Laboratorio (Nvl 4)"),
-                    makeTimer("v1_t7", "Máquina Bélica", "fa-robot", 15, 16, "builder_base", "Base del Constructor", 266055, null)
+                    makeTimer("t_th17", "Ayuntamiento", "fa-chess-rook", 17, 18, "builder", "Aldea Principal", 205227, "Aprendiz de Constructor"),
+                    makeTimer("t_wt1", "Torre de Magos #1", "fa-wand-sparkles", 12, 13, "builder", "Aldea Principal", 49484, null),
+                    makeTimer("t_wt2", "Torre de Magos #2", "fa-wand-sparkles", 11, 12, "builder", "Aldea Principal", 9673, null),
+                    makeTimer("t_wt3", "Torre de Magos #3", "fa-wand-sparkles", 12, 13, "builder", "Aldea Principal", 128874, null),
+                    makeTimer("t_wt4", "Torre de Magos #4", "fa-wand-sparkles", 11, 12, "builder", "Aldea Principal", 88513, null),
+                    makeTimer("t_drag", "Dragón", "fa-dragon", 9, 10, "research", "Laboratorio", 64323, "Ayudante de Laboratorio"),
+                    makeTimer("t_bm", "Máquina Bélica", "fa-robot", 15, 16, "builder_base", "Base del Constructor", 266055, null)
                 ],
                 helpers: [
-                    { id: 93000000, name: "Aprendiz de Constructor", lvl: 5, role: "Acelera edificios y héroes", icon: "fa-helmet-safety", cooldownEndMs: now + 15946 * 1000 },
-                    { id: 93000001, name: "Ayudante de Laboratorio", lvl: 4, role: "Acelera investigaciones", icon: "fa-flask-vial", cooldownEndMs: now + 15946 * 1000 },
-                    { id: 93000002, name: "Alquimista", lvl: 1, role: "Convierte recursos diarios", icon: "fa-scale-balanced", cooldownEndMs: now + 15946 * 1000 },
-                    { id: 93000003, name: "Prospector", lvl: 1, role: "Asistente de aldea", icon: "fa-compass", cooldownEndMs: now }
+                    { data: 93000000, lvl: 5, cooldownEndMs: now + 15946 * 1000 },
+                    { data: 93000001, lvl: 4, cooldownEndMs: now + 15946 * 1000 },
+                    { data: 93000002, lvl: 1, cooldownEndMs: now + 15946 * 1000 },
+                    { data: 93000003, lvl: 1, cooldownEndMs: 0 }
                 ]
             };
         }
@@ -809,25 +760,17 @@
         // =====================================================================
         // 3. ESTADO GLOBAL Y PERSISTENCIA EN LOCALSTORAGE
         // =====================================================================
-        const STORAGE_KEY = "coc_notifier_multi_v2";
+        const STORAGE_KEY = "coc_upgrade_notifier_v3";
         let appState = {
-            activeVillageId: "village_default_1",
+            villages: [],
+            activeVillageId: null,
             alertSettings: {
                 leadMinutes: 15,
                 notifyAtZero: true
-            },
-            villages: []
+            }
         };
-
         let activeCategoryFilter = "all";
         let newVillageMode = "json";
-
-        window.addEventListener("DOMContentLoaded", () => {
-            loadAppState();
-            updateNotificationButtonUI();
-            renderAll();
-            setInterval(tickSecond, 1000);
-        });
 
         function loadAppState() {
             try {
@@ -835,28 +778,27 @@
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed && Array.isArray(parsed.villages) && parsed.villages.length > 0) {
-                        appState = parsed;
-                        if (!appState.alertSettings) {
-                            appState.alertSettings = { leadMinutes: 15, notifyAtZero: true };
-                        }
-                        if (!appState.villages.some(v => v.id === appState.activeVillageId)) {
-                            appState.activeVillageId = appState.villages[0].id;
-                        }
+                        appState = {
+                            villages: parsed.villages,
+                            activeVillageId: parsed.activeVillageId || parsed.villages[0].id,
+                            alertSettings: {
+                                leadMinutes: typeof parsed.alertSettings?.leadMinutes === "number" ? parsed.alertSettings.leadMinutes : 15,
+                                notifyAtZero: parsed.alertSettings?.notifyAtZero !== false
+                            }
+                        };
                         return;
                     }
                 }
-            } catch (e) {
-                console.warn("Error leyendo almacenamiento local:", e);
-            }
+            } catch (e) {}
 
-            // Primera carga: crear aldea #Q8Y9PQRP8 por defecto
+            const v1 = createDefaultVillage1();
             appState = {
-                activeVillageId: "village_default_1",
+                villages: [v1],
+                activeVillageId: v1.id,
                 alertSettings: {
                     leadMinutes: 15,
                     notifyAtZero: true
-                },
-                villages: [createDefaultVillage1()]
+                }
             };
             saveAppState();
         }
@@ -864,9 +806,7 @@
         function saveAppState() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-            } catch (e) {
-                console.warn("No se pudo guardar en localStorage:", e);
-            }
+            } catch (e) {}
         }
 
         function getActiveVillage() {
@@ -874,193 +814,237 @@
         }
 
         // =====================================================================
-        // 4. LÓGICA DE TIEMPOS, PASE DE ORO Y NOTIFICACIONES
+        // 4. UTILIDADES DE TIEMPO Y FORMATO
         // =====================================================================
         function getRemainingSeconds(timer) {
-            return Math.max(0, Math.ceil((timer.endTimeMs - Date.now()) / 1000));
+            return Math.max(0, Math.floor((timer.endTimeMs - Date.now()) / 1000));
         }
 
-        function formatDuration(totalSeconds) {
-            if (totalSeconds <= 0) return "¡COMPLETADO!";
-            const d = Math.floor(totalSeconds / 86400);
-            const h = Math.floor((totalSeconds % 86400) / 3600);
-            const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = Math.floor(totalSeconds % 60);
+        function formatDuration(totalSec) {
+            const sec = Math.max(0, Math.floor(totalSec));
+            const days = Math.floor(sec / 86400);
+            const hours = Math.floor((sec % 86400) / 3600);
+            const mins = Math.floor((sec % 3600) / 60);
+            const secs = sec % 60;
+
             const pad = (n) => String(n).padStart(2, "0");
-            if (d > 0) return `${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s`;
-            return `${pad(h)}h ${pad(m)}m ${pad(s)}s`;
+            if (days > 0) {
+                return `${days}d ${pad(hours)}h ${pad(mins)}m ${pad(secs)}s`;
+            }
+            return `${pad(hours)}h ${pad(mins)}m ${pad(secs)}s`;
         }
 
         function formatClockTime(timestampMs) {
-            const target = new Date(timestampMs);
+            const d = new Date(timestampMs);
             const now = new Date();
-            const isToday = target.toDateString() === now.toDateString();
+            const isToday = d.toDateString() === now.toDateString();
             const tomorrow = new Date(now);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const isTomorrow = target.toDateString() === tomorrow.toDateString();
+            tomorrow.setDate(now.getDate() + 1);
+            const isTomorrow = d.toDateString() === tomorrow.toDateString();
 
-            const hhmm = target.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-            if (isToday) return hhmm;
-            if (isTomorrow) return `Mañana ${hhmm}`;
-            return `${target.toLocaleDateString("es-ES", { day: "2-digit", month: "short" })} ${hhmm}`;
+            const timeStr = d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+            if (isToday) return `Hoy ${timeStr}`;
+            if (isTomorrow) return `Mañana ${timeStr}`;
+            const dayStr = d.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+            return `${dayStr} ${timeStr}`;
         }
 
-        // Bucle cada segundo: evalúa alertas en TODAS las aldeas y actualiza UI
-        function tickSecond() {
-            let stateChanged = false;
-            const leadSeconds = (appState.alertSettings.leadMinutes || 0) * 60;
-
-            appState.villages.forEach(village => {
-                village.timers.forEach(timer => {
-                    const rem = getRemainingSeconds(timer);
-
-                    // 1. Verificar aviso anticipado (cuando faltan <= X minutos y aún > 0)
-                    if (leadSeconds > 0 && rem > 0 && rem <= leadSeconds && !timer.preNotified) {
-                        timer.preNotified = true;
-                        stateChanged = true;
-                        fireTimerNotification(village, timer, "prealert", rem);
-                    }
-
-                    // 2. Verificar finalización al llegar a 00:00:00
-                    if (rem === 0 && !timer.doneNotified) {
-                        timer.doneNotified = true;
-                        stateChanged = true;
-                        if (appState.alertSettings.notifyAtZero || leadSeconds === 0) {
-                            fireTimerNotification(village, timer, "completed", 0);
-                        }
-                    }
-                });
-            });
-
-            if (stateChanged) {
-                saveAppState();
-            }
-
+        // =====================================================================
+        // 5. GESTIÓN MULTI-ALDEA POR PESTAÑAS
+        // =====================================================================
+        function switchVillageTab(villageId) {
+            appState.activeVillageId = villageId;
+            saveAppState();
             renderAll();
         }
 
-        // =====================================================================
-        // 5. SELECTORES DEL PASE DE ORO (0%, 10%, 15%, 20%)
-        // =====================================================================
-        function setVillageBoost(type, pct) {
-            const village = getActiveVillage();
-            if (!village) return;
+        function openNewVillageModal() {
+            document.getElementById("new-village-name").value = `Aldea #${appState.villages.length + 1}`;
+            document.getElementById("new-village-tag").value = "";
+            document.getElementById("new-village-json").value = "";
+            document.getElementById("new-village-error").classList.add("hidden");
+            switchNewVillageMode("json");
+            openModal("modal-new-village");
+        }
 
-            if (type === "builder") {
-                village.builderBoost = pct;
+        function switchNewVillageMode(mode) {
+            newVillageMode = mode;
+            const tabJson = document.getElementById("new-v-tab-json");
+            const tabBlank = document.getElementById("new-v-tab-blank");
+            const jsonSec = document.getElementById("new-village-json-section");
+
+            if (mode === "json") {
+                tabJson.className = "py-1.5 rounded-lg text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer";
+                tabBlank.className = "py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer";
+                jsonSec.classList.remove("hidden");
             } else {
-                village.researchBoost = pct;
+                tabBlank.className = "py-1.5 rounded-lg text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer";
+                tabJson.className = "py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer";
+                jsonSec.classList.add("hidden");
             }
-
-            if (village.autoRecalcOnBoostChange) {
-                recalculateVillageTimersForType(village, type, pct, false);
-            }
-
-            saveAppState();
-            renderAll();
-            showToast(
-                `Pase ${type === "builder" ? "de Constructor" : "de Investigación"}: ${pct}%`,
-                village.autoRecalcOnBoostChange
-                    ? `Timers activos ajustados al ${pct}% de descuento sin errores acumulados.`
-                    : `Se aplicará ${pct}% a las nuevas mejoras que añadas.`,
-                "info"
-            );
         }
 
-        function toggleAutoRecalcBoost(checked) {
-            const village = getActiveVillage();
-            if (!village) return;
-            village.autoRecalcOnBoostChange = checked;
-            saveAppState();
-        }
+        function createNewVillage() {
+            const errBox = document.getElementById("new-village-error");
+            errBox.classList.add("hidden");
 
-        function recalculateAllActiveTimersNow() {
-            const village = getActiveVillage();
-            if (!village) return;
-            recalculateVillageTimersForType(village, "builder", village.builderBoost, true);
-            recalculateVillageTimersForType(village, "research", village.researchBoost, true);
-            saveAppState();
-            renderAll();
-            showToast(
-                "Timers Recalculados",
-                `Constructor (${village.builderBoost}%) e Investigación (${village.researchBoost}%) aplicados.`,
-                "success"
-            );
-        }
+            let name = document.getElementById("new-village-name").value.trim() || `Aldea #${appState.villages.length + 1}`;
+            let tag = document.getElementById("new-village-tag").value.trim().toUpperCase();
+            if (tag && !tag.startsWith("#")) tag = "#" + tag;
 
-        function recalculateVillageTimersForType(village, boostType, newPct, forceFromCurrent = false) {
-            const now = Date.now();
-            const leadSeconds = (appState.alertSettings.leadMinutes || 0) * 60;
+            let timers = [];
+            let helpers = [];
 
-            village.timers.forEach(timer => {
-                const isBuilderGroup = timer.category === "builder" || timer.category === "builder_base";
-                const isResearchGroup = timer.category === "research" || timer.category === "pet";
-
-                if ((boostType === "builder" && !isBuilderGroup) || (boostType === "research" && !isResearchGroup)) {
+            if (newVillageMode === "json") {
+                const rawJson = document.getElementById("new-village-json").value.trim();
+                if (!rawJson) {
+                    errBox.textContent = "Pega el JSON exportado de Clash of Clans o selecciona 'Aldea Vacía / Manual'.";
+                    errBox.classList.remove("hidden");
                     return;
                 }
+                try {
+                    const parsedResult = parseCocVillageJson(rawJson);
+                    timers = parsedResult.timers;
+                    helpers = parsedResult.helpers;
+                    if (!tag && parsedResult.tag) tag = parsedResult.tag;
+                } catch (err) {
+                    errBox.textContent = err.message || "El formato del JSON no es válido.";
+                    errBox.classList.remove("hidden");
+                    return;
+                }
+            }
 
-                const currentRem = getRemainingSeconds(timer);
-                if (currentRem <= 0) return;
-
-                // Recuperar tiempo base sin descuento previo para evitar errores compuestos
-                const prevFactor = Math.max(0.1, 1 - (timer.appliedBoostPct || 0) / 100);
-                const newFactor = Math.max(0.1, 1 - newPct / 100);
-
-                const unboostedRem = currentRem / prevFactor;
-                const newRem = Math.max(1, Math.round(unboostedRem * newFactor));
-
-                const unboostedTotal = (timer.totalSeconds || currentRem) / prevFactor;
-                const newTotal = Math.max(newRem, Math.round(unboostedTotal * newFactor));
-
-                timer.endTimeMs = now + newRem * 1000;
-                timer.totalSeconds = newTotal;
-                timer.appliedBoostPct = newPct;
-
-                // Si al recalcular vuelve a quedar fuera de ventana de alerta, rearmar bandera
-                if (newRem > leadSeconds) timer.preNotified = false;
-                if (newRem > 0) timer.doneNotified = false;
+            const newId = `village_${Date.now()}`;
+            appState.villages.push({
+                id: newId,
+                name,
+                tag: tag || "#SIN-TAG",
+                timers,
+                helpers
             });
+            appState.activeVillageId = newId;
+            saveAppState();
+            renderAll();
+            closeModal("modal-new-village");
+            showToast("Aldea añadida", `Se creó la pestaña "${name}" con ${timers.length} mejora(s).`, "success");
+        }
+
+        function openRenameVillageModal() {
+            const v = getActiveVillage();
+            if (!v) return;
+            document.getElementById("rename-village-name").value = v.name;
+            document.getElementById("rename-village-tag").value = v.tag || "";
+            openModal("modal-rename-village");
+        }
+
+        function saveRenameVillage() {
+            const v = getActiveVillage();
+            if (!v) return;
+            const newName = document.getElementById("rename-village-name").value.trim();
+            let newTag = document.getElementById("rename-village-tag").value.trim().toUpperCase();
+            if (newTag && !newTag.startsWith("#")) newTag = "#" + newTag;
+
+            if (newName) v.name = newName;
+            v.tag = newTag || "#SIN-TAG";
+            saveAppState();
+            renderAll();
+            closeModal("modal-rename-village");
+            showToast("Aldea actualizada", `Pestaña renombrada a "${v.name}".`, "info");
+        }
+
+        function openDeleteVillageModal() {
+            if (appState.villages.length <= 1) return;
+            const v = getActiveVillage();
+            document.getElementById("delete-village-confirm-name").textContent = `${v.name} (${v.tag})`;
+            openModal("modal-delete-village");
+        }
+
+        function confirmDeleteActiveVillage() {
+            if (appState.villages.length <= 1) return;
+            const idx = appState.villages.findIndex(v => v.id === appState.activeVillageId);
+            if (idx !== -1) {
+                const removedName = appState.villages[idx].name;
+                appState.villages.splice(idx, 1);
+                appState.activeVillageId = appState.villages[Math.max(0, idx - 1)].id;
+                saveAppState();
+                renderAll();
+                closeModal("modal-delete-village");
+                showToast("Aldea eliminada", `Se eliminó la pestaña "${removedName}".`, "warning");
+            }
         }
 
         // =====================================================================
-        // 6. ANTICIPACIÓN DE NOTIFICACIÓN EN MINUTOS
+        // 6. CONFIGURACIÓN DE ANTICIPACIÓN DE NOTIFICACIONES
         // =====================================================================
+        const LEAD_PRESETS = [0, 5, 10, 15, 30, 60];
+
         function setLeadMinutes(val) {
             let mins = parseInt(val, 10);
             if (isNaN(mins) || mins < 0) mins = 0;
             if (mins > 1440) mins = 1440;
 
             appState.alertSettings.leadMinutes = mins;
-            const leadSeconds = mins * 60;
+            const leadSec = mins * 60;
 
-            // Rearmar preNotified si el nuevo margen es menor al tiempo restante actual
             appState.villages.forEach(v => {
                 v.timers.forEach(t => {
-                    const rem = getRemainingSeconds(t);
-                    if (rem > leadSeconds) {
+                    if (getRemainingSeconds(t) > leadSec) {
                         t.preNotified = false;
                     }
                 });
             });
 
             saveAppState();
-            renderAll();
+            renderAlertSettingsUI();
+            renderUpgradesGrid();
         }
 
         function toggleNotifyAtZero(checked) {
-            appState.alertSettings.notifyAtZero = checked;
+            appState.alertSettings.notifyAtZero = !!checked;
             saveAppState();
-            renderAll();
+            renderAlertSettingsUI();
+        }
+
+        function renderAlertSettingsUI() {
+            const current = appState.alertSettings.leadMinutes;
+            const container = document.getElementById("lead-time-chips");
+
+            container.innerHTML = LEAD_PRESETS.map(m => {
+                const isSelected = current === m;
+                const label = m === 0 ? "Al terminar (0m)" : `${m} min antes`;
+                return `
+                    <button onclick="setLeadMinutes(${m})" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                        isSelected
+                            ? "bg-coc-gold text-slate-950 border-coc-gold shadow-sm"
+                            : "bg-slate-900 hover:bg-slate-800 text-slate-300 border-coc-border"
+                    }">
+                        ${label}
+                    </button>
+                `;
+            }).join("");
+
+            const inputEl = document.getElementById("custom-lead-minutes");
+            if (document.activeElement !== inputEl) {
+                inputEl.value = current;
+            }
+            document.getElementById("toggle-notify-zero").checked = appState.alertSettings.notifyAtZero;
+
+            const summaryEl = document.getElementById("active-alert-summary");
+            if (current === 0) {
+                summaryEl.textContent = "Avisando exactamente al terminar (00:00:00)";
+            } else {
+                summaryEl.textContent = `Avisando ${current} min antes${appState.alertSettings.notifyAtZero ? " y al terminar" : ""}`;
+            }
         }
 
         // =====================================================================
-        // 7. POCIONES RÁPIDAS Y GESTIÓN DE TIMERS
+        // 7. SIMULADOR DE POCIONES Y TEMPORIZADORES MANUALES
         // =====================================================================
         function applyPotionDiscount(type, hours) {
             const village = getActiveVillage();
             if (!village) return;
 
+            const now = Date.now();
             const discountMs = hours * 3600 * 1000;
             let affected = 0;
 
@@ -1068,14 +1052,12 @@
                 const rem = getRemainingSeconds(timer);
                 if (rem <= 0) return;
 
-                // Poción del Constructor afecta edificios/héroes de Aldea Principal (category === 'builder')
                 if (type === "builder" && timer.category === "builder") {
-                    timer.endTimeMs = Math.max(Date.now(), timer.endTimeMs - discountMs);
+                    timer.endTimeMs = Math.max(now, timer.endTimeMs - discountMs);
                     affected++;
                 }
-                // Poción de Investigación afecta Laboratorio (category === 'research')
                 if (type === "research" && timer.category === "research") {
-                    timer.endTimeMs = Math.max(Date.now(), timer.endTimeMs - discountMs);
+                    timer.endTimeMs = Math.max(now, timer.endTimeMs - discountMs);
                     affected++;
                 }
             });
@@ -1084,14 +1066,66 @@
             renderAll();
 
             if (affected > 0) {
-                showToast(
-                    type === "builder" ? "Poción del Constructor (-9h)" : "Poción de Investigación (-23h)",
-                    `Se adelantaron ${hours} horas en ${affected} mejora(s) activa(s).`,
-                    "success"
-                );
+                const label = type === "builder" ? "Poción del Constructor (-9h)" : "Poción de Investigación (-23h)";
+                showToast(label, `Se redujo el tiempo en ${affected} mejora(s) de ${village.name}.`, "success");
             } else {
-                showToast("Sin mejoras aplicables", "No hay mejoras activas de ese tipo en esta aldea.", "warning");
+                showToast("Sin cambios", "No hay mejoras activas de esa categoría en esta aldea.", "warning");
             }
+        }
+
+        function openAddTimerModal() {
+            document.getElementById("manual-timer-name").value = "";
+            document.getElementById("manual-timer-lvl").value = "";
+            document.getElementById("manual-timer-cat").value = "builder";
+            document.getElementById("manual-timer-days").value = 1;
+            document.getElementById("manual-timer-hours").value = 0;
+            document.getElementById("manual-timer-mins").value = 0;
+            openModal("modal-add-timer");
+        }
+
+        function createManualTimer() {
+            const d = Math.max(0, parseInt(document.getElementById("manual-timer-days").value, 10) || 0);
+            const h = Math.max(0, parseInt(document.getElementById("manual-timer-hours").value, 10) || 0);
+            const m = Math.max(0, parseInt(document.getElementById("manual-timer-mins").value, 10) || 0);
+            const totalSec = d * 86400 + h * 3600 + m * 60;
+
+            if (totalSec <= 0) {
+                showToast("Duración inválida", "Ingresa al menos 1 minuto para la mejora.", "warning");
+                return;
+            }
+
+            const now = Date.now();
+            const village = getActiveVillage();
+            const name = document.getElementById("manual-timer-name").value.trim() || "Mejora Manual";
+            const toLvl = parseInt(document.getElementById("manual-timer-lvl").value, 10) || null;
+            const cat = document.getElementById("manual-timer-cat").value;
+
+            const catMeta = {
+                builder: { label: "Aldea Principal", icon: "fa-hammer" },
+                research: { label: "Laboratorio", icon: "fa-flask" },
+                pet: { label: "Caseta de Mascotas", icon: "fa-paw" },
+                builder_base: { label: "Base del Constructor", icon: "fa-gear" }
+            };
+
+            village.timers.push({
+                id: `manual_${now}`,
+                name,
+                icon: catMeta[cat].icon,
+                fromLvl: toLvl ? Math.max(1, toLvl - 1) : null,
+                toLvl: toLvl,
+                category: cat,
+                subLabel: catMeta[cat].label,
+                totalSeconds: totalSec,
+                endTimeMs: now + totalSec * 1000,
+                helperAssigned: null,
+                preNotified: false,
+                doneNotified: false
+            });
+
+            saveAppState();
+            renderAll();
+            closeModal("modal-add-timer");
+            showToast("Mejora añadida", `${name} iniciada (${formatDuration(totalSec)}).`, "success");
         }
 
         function deleteTimer(timerId) {
@@ -1102,87 +1136,133 @@
             renderAll();
         }
 
+        function completeTimerNow(timerId) {
+            const village = getActiveVillage();
+            if (!village) return;
+            const timer = village.timers.find(t => t.id === timerId);
+            if (!timer) return;
+            timer.endTimeMs = Date.now();
+            saveAppState();
+            renderAll();
+        }
+
+        function clearCompletedTimers() {
+            const village = getActiveVillage();
+            if (!village) return;
+            const before = village.timers.length;
+            village.timers = village.timers.filter(t => getRemainingSeconds(t) > 0);
+            const removed = before - village.timers.length;
+            saveAppState();
+            renderAll();
+            if (removed > 0) {
+                showToast("Lista limpia", `Se descartaron ${removed} mejora(s) completada(s).`, "info");
+            }
+        }
+
         // =====================================================================
-        // 8. PARSEO DE JSON DE CLASH OF CLANS
+        // 8. PARSER DE JSON EXPORTADO DE CLASH OF CLANS
         // =====================================================================
-        function parseCocJsonToTimersAndHelpers(jsonObj, builderBoostPct, researchBoostPct) {
-            const now = Date.now();
-            const exportTs = jsonObj.timestamp || Math.floor(now / 1000);
-            const elapsedSinceExport = Math.max(0, Math.floor(now / 1000) - exportTs);
-
-            // Detectar si el JSON exportado es reciente (< 14 días); si es de prueba o futuro, usar timer directo
-            const useElapsedOffset = (Math.floor(now / 1000) >= exportTs) && (elapsedSinceExport < 14 * 86400);
-
-            const categoriesToScan = [
-                { key: "buildings", category: "builder", label: "Aldea Principal" },
-                { key: "traps", category: "builder", label: "Trampa (Aldea)" },
-                { key: "heroes", category: "builder", label: "Héroe (Aldea)" },
-                { key: "units", category: "research", label: "Laboratorio (Tropa)" },
-                { key: "spells", category: "research", label: "Laboratorio (Hechizo)" },
-                { key: "siege_machines", category: "research", label: "Laboratorio (Asedio)" },
-                { key: "pets", category: "pet", label: "Caseta de Mascotas" },
-                { key: "buildings2", category: "builder_base", label: "Base del Constructor" },
-                { key: "traps2", category: "builder_base", label: "Trampa (Constructor)" },
-                { key: "units2", category: "builder_base", label: "Lab. Estelar" },
-                { key: "heroes2", category: "builder_base", label: "Héroe (Constructor)" }
-            ];
-
-            // Obtener niveles de asistentes para etiquetar asignaciones
-            const helperLvlMap = {};
-            if (Array.isArray(jsonObj.helpers)) {
-                jsonObj.helpers.forEach(h => {
-                    helperLvlMap[h.data] = h.lvl || 1;
-                });
+        function parseCocVillageJson(rawJsonText) {
+            let data;
+            try {
+                data = JSON.parse(rawJsonText);
+            } catch (e) {
+                throw new Error("El texto pegado no es un JSON válido. Asegúrate de copiarlo completo.");
             }
 
+            if (!data || typeof data !== "object") {
+                throw new Error("Estructura de JSON no reconocida.");
+            }
+
+            const now = Date.now();
             const rawExtracted = [];
             const nameFrequency = {};
 
-            categoriesToScan.forEach(group => {
-                const arr = jsonObj[group.key];
-                if (!Array.isArray(arr)) return;
+            const registerItem = (item, category, subLabel, fallbackPrefix) => {
+                if (!item || typeof item.timer !== "number" || item.timer <= 0) return;
 
-                arr.forEach(item => {
-                    if (item.timer && item.timer > 0) {
-                        const info = COC_DICT[item.data] || { name: `Elemento #${item.data}`, icon: "fa-hammer" };
-                        nameFrequency[info.name] = (nameFrequency[info.name] || 0) + 1;
+                const meta = COC_DICT[item.data] || {
+                    name: `${fallbackPrefix} (${item.data})`,
+                    icon: category === "research" ? "fa-flask" : "fa-hammer"
+                };
 
-                        const remSeconds = useElapsedOffset
-                            ? Math.max(0, item.timer - elapsedSinceExport)
-                            : item.timer;
+                const fromLvl = typeof item.lvl === "number" ? item.lvl : 1;
+                const toLvl = fromLvl + 1;
 
-                        let helperLabel = null;
-                        if (item.helper_recurrent) {
-                            if (group.category === "research") {
-                                const hLvl = helperLvlMap[93000001] || 1;
-                                helperLabel = `Ayudante de Laboratorio (Nvl ${hLvl})`;
-                            } else {
-                                const hLvl = helperLvlMap[93000000] || 1;
-                                helperLabel = `Aprendiz de Constructor (Nvl ${hLvl})`;
+                let helperAssigned = null;
+                if (item.helper_recurrent) {
+                    helperAssigned = category === "research" ? "Ayudante de Laboratorio" : "Aprendiz de Constructor";
+                }
+
+                nameFrequency[meta.name] = (nameFrequency[meta.name] || 0) + 1;
+                rawExtracted.push({
+                    baseName: meta.name,
+                    icon: meta.icon,
+                    fromLvl,
+                    toLvl,
+                    category,
+                    subLabel,
+                    remainingSeconds: item.timer,
+                    totalSeconds: item.timer,
+                    helperAssigned
+                });
+            };
+
+            // 1. Edificios Aldea Principal y módulos internos
+            if (Array.isArray(data.buildings)) {
+                data.buildings.forEach(b => {
+                    registerItem(b, "builder", "Aldea Principal", "Edificio");
+                    if (Array.isArray(b.types)) {
+                        b.types.forEach(t => {
+                            if (Array.isArray(t.modules)) {
+                                t.modules.forEach(m => registerItem(m, "builder", "Módulo Defensivo", "Módulo"));
                             }
-                        }
-
-                        const appliedBoost = (group.category === "research" || group.category === "pet")
-                            ? researchBoostPct
-                            : builderBoostPct;
-
-                        rawExtracted.push({
-                            baseName: info.name,
-                            icon: info.icon,
-                            fromLvl: item.lvl || 1,
-                            toLvl: (item.lvl || 1) + 1,
-                            category: group.category,
-                            subLabel: group.label,
-                            totalSeconds: item.timer,
-                            remainingSeconds: remSeconds,
-                            appliedBoostPct: appliedBoost,
-                            helperAssigned: helperLabel
                         });
                     }
                 });
-            });
+            }
 
-            // Numerar duplicados (#1, #2...) si hay varios edificios iguales en mejora
+            // 2. Trampas Aldea Principal
+            if (Array.isArray(data.traps)) {
+                data.traps.forEach(tr => registerItem(tr, "builder", "Trampa Aldea", "Trampa"));
+            }
+
+            // 3. Héroes Aldea Principal
+            if (Array.isArray(data.heroes)) {
+                data.heroes.forEach(h => registerItem(h, "builder", "Héroe", "Héroe"));
+            }
+
+            // 4. Laboratorio (Tropas, Máquinas de Asedio y Hechizos)
+            if (Array.isArray(data.units)) {
+                data.units.forEach(u => registerItem(u, "research", "Laboratorio", "Tropa"));
+            }
+            if (Array.isArray(data.siege_machines)) {
+                data.siege_machines.forEach(s => registerItem(s, "research", "Taller / Lab", "Máquina"));
+            }
+            if (Array.isArray(data.spells)) {
+                data.spells.forEach(sp => registerItem(sp, "research", "Laboratorio", "Hechizo"));
+            }
+
+            // 5. Mascotas
+            if (Array.isArray(data.pets)) {
+                data.pets.forEach(p => registerItem(p, "research", "Caseta de Mascotas", "Mascota"));
+            }
+
+            // 6. Base del Constructor (Edificios, Trampas, Tropas y Héroes)
+            if (Array.isArray(data.buildings2)) {
+                data.buildings2.forEach(b2 => registerItem(b2, "builder_base", "Base del Constructor", "Edificio Constructor"));
+            }
+            if (Array.isArray(data.traps2)) {
+                data.traps2.forEach(tr2 => registerItem(tr2, "builder_base", "Base del Constructor", "Trampa Constructor"));
+            }
+            if (Array.isArray(data.units2)) {
+                data.units2.forEach(u2 => registerItem(u2, "builder_base", "Lab. Estelar", "Tropa Constructor"));
+            }
+            if (Array.isArray(data.heroes2)) {
+                data.heroes2.forEach(h2 => registerItem(h2, "builder_base", "Base del Constructor", "Héroe Constructor"));
+            }
+
+            // Numerar duplicados (#1, #2...)
             const nameCounters = {};
             const timers = rawExtracted.map((t, idx) => {
                 let finalName = t.baseName;
@@ -1201,314 +1281,163 @@
                     subLabel: t.subLabel,
                     totalSeconds: t.totalSeconds,
                     endTimeMs: now + t.remainingSeconds * 1000,
-                    appliedBoostPct: t.appliedBoostPct,
                     helperAssigned: t.helperAssigned,
                     preNotified: false,
                     doneNotified: false
                 };
             });
 
-            const helpers = (jsonObj.helpers || []).map(h => {
-                const info = COC_DICT[h.data] || { name: `Asistente ${h.data}`, icon: "fa-user-astronaut", role: "Asistente" };
-                const cdSeconds = h.helper_cooldown
-                    ? (useElapsedOffset ? Math.max(0, h.helper_cooldown - elapsedSinceExport) : h.helper_cooldown)
-                    : 0;
-                return {
-                    id: h.data,
-                    name: info.name,
+            // 7. Asistentes
+            const helpers = Array.isArray(data.helpers)
+                ? data.helpers.map(h => ({
+                    data: h.data,
                     lvl: h.lvl || 1,
-                    role: info.role || "Asistente de aldea",
-                    icon: info.icon,
-                    cooldownEndMs: now + cdSeconds * 1000
-                };
-            });
+                    cooldownEndMs: typeof h.helper_cooldown === "number" && h.helper_cooldown > 0
+                        ? now + h.helper_cooldown * 1000
+                        : 0
+                }))
+                : [];
 
             return {
-                tag: jsonObj.tag || null,
+                tag: typeof data.tag === "string" ? data.tag.toUpperCase() : "",
                 timers,
                 helpers
             };
         }
 
-        // =====================================================================
-        // 9. MODALES: JSON, NUEVA ALDEA, MANUAL TIMER, RENOMBRAR, ELIMINAR
-        // =====================================================================
-        function closeModal(id) {
-            document.getElementById(id).classList.add("hidden");
-        }
-
         function openJsonModal() {
-            const village = getActiveVillage();
-            document.getElementById("json-target-village-name").textContent = `${village.name} (${village.tag || "Sin Tag"})`;
+            const v = getActiveVillage();
+            document.getElementById("json-target-village-name").textContent = `${v.name} (${v.tag})`;
             document.getElementById("json-update-input").value = "";
             document.getElementById("json-update-error").classList.add("hidden");
-            document.getElementById("modal-json").classList.remove("hidden");
+            openModal("modal-json");
         }
 
         function applyJsonToCurrentVillage() {
-            const raw = document.getElementById("json-update-input").value.trim();
-            const errEl = document.getElementById("json-update-error");
+            const errBox = document.getElementById("json-update-error");
+            errBox.classList.add("hidden");
+            const rawText = document.getElementById("json-update-input").value.trim();
+
+            if (!rawText) {
+                errBox.textContent = "Pega primero el JSON exportado desde Clash of Clans.";
+                errBox.classList.remove("hidden");
+                return;
+            }
+
             try {
-                const parsed = JSON.parse(raw);
-                if (!parsed || typeof parsed !== "object") throw new Error("El formato JSON no es válido.");
-
-                const village = getActiveVillage();
-                const extracted = parseCocJsonToTimersAndHelpers(parsed, village.builderBoost, village.researchBoost);
-
-                if (extracted.tag) village.tag = extracted.tag;
-                village.timers = extracted.timers;
-                village.helpers = extracted.helpers;
+                const v = getActiveVillage();
+                const parsed = parseCocVillageJson(rawText);
+                v.timers = parsed.timers;
+                if (parsed.helpers.length > 0) v.helpers = parsed.helpers;
+                if (parsed.tag) v.tag = parsed.tag;
 
                 saveAppState();
                 renderAll();
                 closeModal("modal-json");
-                showToast("¡Aldea Actualizada!", `Se cargaron ${extracted.timers.length} mejoras activas.`, "success");
-            } catch (e) {
-                errEl.textContent = "Error al leer el JSON: " + e.message;
-                errEl.classList.remove("hidden");
+                showToast("JSON Sincronizado", `Se cargaron ${parsed.timers.length} mejora(s) activas en ${v.name}.`, "success");
+            } catch (err) {
+                errBox.textContent = err.message || "Error al procesar el JSON.";
+                errBox.classList.remove("hidden");
             }
         }
 
         function restoreDefaultVillage1() {
-            const idx = appState.villages.findIndex(v => v.id === appState.activeVillageId);
-            if (idx !== -1) {
-                appState.villages[idx] = createDefaultVillage1();
-                appState.activeVillageId = appState.villages[idx].id;
-                saveAppState();
-                renderAll();
-                closeModal("modal-json");
-                showToast("Aldea Restaurada", "Se restablecieron los datos originales de #Q8Y9PQRP8.", "success");
-            }
-        }
-
-        // Modal Nueva Aldea
-        function openNewVillageModal() {
-            document.getElementById("new-village-name").value = "";
-            document.getElementById("new-village-tag").value = "";
-            document.getElementById("new-village-json").value = "";
-            document.getElementById("new-village-b-boost").value = "0";
-            document.getElementById("new-village-r-boost").value = "0";
-            document.getElementById("new-village-error").classList.add("hidden");
-            switchNewVillageMode("json");
-            document.getElementById("modal-new-village").classList.remove("hidden");
-        }
-
-        function switchNewVillageMode(mode) {
-            newVillageMode = mode;
-            const btnJson = document.getElementById("new-v-tab-json");
-            const btnBlank = document.getElementById("new-v-tab-blank");
-            const jsonSec = document.getElementById("new-village-json-section");
-
-            if (mode === "json") {
-                btnJson.className = "py-1.5 rounded-lg text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer";
-                btnBlank.className = "py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer";
-                jsonSec.classList.remove("hidden");
-            } else {
-                btnBlank.className = "py-1.5 rounded-lg text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer";
-                btnJson.className = "py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer";
-                jsonSec.classList.add("hidden");
-            }
-        }
-
-        function createNewVillage() {
-            const errEl = document.getElementById("new-village-error");
-            errEl.classList.add("hidden");
-
-            const customName = document.getElementById("new-village-name").value.trim();
-            let customTag = document.getElementById("new-village-tag").value.trim();
-            const bBoost = parseInt(document.getElementById("new-village-b-boost").value, 10) || 0;
-            const rBoost = parseInt(document.getElementById("new-village-r-boost").value, 10) || 0;
-
-            let timers = [];
-            let helpers = [];
-
-            if (newVillageMode === "json") {
-                const rawJson = document.getElementById("new-village-json").value.trim();
-                if (!rawJson) {
-                    errEl.textContent = "Pega el JSON de tu aldea o cambia a 'Aldea Vacía / Manual'.";
-                    errEl.classList.remove("hidden");
-                    return;
-                }
-                try {
-                    const parsed = JSON.parse(rawJson);
-                    const extracted = parseCocJsonToTimersAndHelpers(parsed, bBoost, rBoost);
-                    timers = extracted.timers;
-                    helpers = extracted.helpers;
-                    if (!customTag && extracted.tag) customTag = extracted.tag;
-                } catch (e) {
-                    errEl.textContent = "JSON inválido: " + e.message;
-                    errEl.classList.remove("hidden");
-                    return;
-                }
-            }
-
-            if (customTag && !customTag.startsWith("#")) {
-                customTag = "#" + customTag.toUpperCase();
-            }
-
-            const newId = `village_${Date.now()}`;
-            const finalName = customName || `Aldea #${appState.villages.length + 1}`;
-
-            appState.villages.push({
-                id: newId,
-                name: finalName,
-                tag: customTag || "#SIN-TAG",
-                builderBoost: bBoost,
-                researchBoost: rBoost,
-                autoRecalcOnBoostChange: true,
-                timers,
-                helpers
-            });
-
-            appState.activeVillageId = newId;
+            const v = getActiveVillage();
+            const def = createDefaultVillage1();
+            v.name = def.name;
+            v.tag = def.tag;
+            v.timers = def.timers;
+            v.helpers = def.helpers;
             saveAppState();
             renderAll();
-            closeModal("modal-new-village");
-            showToast("¡Nueva Aldea Creada!", `Pestaña "${finalName}" añadida con ${timers.length} mejora(s).`, "success");
-        }
-
-        // Modal Añadir Mejora Manual
-        function openAddTimerModal() {
-            document.getElementById("manual-timer-name").value = "";
-            document.getElementById("manual-timer-lvl").value = "";
-            document.getElementById("manual-timer-cat").value = "builder";
-            document.getElementById("manual-timer-days").value = "1";
-            document.getElementById("manual-timer-hours").value = "0";
-            document.getElementById("manual-timer-mins").value = "0";
-            updateManualTimerPreview();
-            document.getElementById("modal-add-timer").classList.remove("hidden");
-        }
-
-        function getManualModalCalculatedSeconds() {
-            const village = getActiveVillage();
-            const cat = document.getElementById("manual-timer-cat").value;
-            const d = parseInt(document.getElementById("manual-timer-days").value, 10) || 0;
-            const h = parseInt(document.getElementById("manual-timer-hours").value, 10) || 0;
-            const m = parseInt(document.getElementById("manual-timer-mins").value, 10) || 0;
-
-            const baseSec = (d * 86400) + (h * 3600) + (m * 60);
-            const boostPct = (cat === "research" || cat === "pet") ? village.researchBoost : village.builderBoost;
-            const discountedSec = Math.round(baseSec * (1 - boostPct / 100));
-
-            return { baseSec, discountedSec, boostPct };
-        }
-
-        function updateManualTimerPreview() {
-            const { baseSec, discountedSec, boostPct } = getManualModalCalculatedSeconds();
-            const label = baseSec <= 0
-                ? "Ingresa una duración"
-                : boostPct > 0
-                    ? `${formatDuration(discountedSec)} (-${boostPct}% Pase)`
-                    : `${formatDuration(baseSec)} (Sin descuento)`;
-            document.getElementById("manual-preview-val").textContent = label;
-        }
-
-        function createManualTimer() {
-            const { discountedSec, boostPct } = getManualModalCalculatedSeconds();
-            if (discountedSec <= 0) {
-                showToast("Duración inválida", "Ingresa al menos 1 minuto para la mejora.", "warning");
-                return;
-            }
-
-            const village = getActiveVillage();
-            const name = document.getElementById("manual-timer-name").value.trim() || "Mejora Manual";
-            const toLvl = parseInt(document.getElementById("manual-timer-lvl").value, 10) || null;
-            const cat = document.getElementById("manual-timer-cat").value;
-
-            const catMeta = {
-                builder: { label: "Aldea Principal", icon: "fa-hammer" },
-                research: { label: "Laboratorio", icon: "fa-flask" },
-                pet: { label: "Caseta de Mascotas", icon: "fa-paw" },
-                builder_base: { label: "Base del Constructor", icon: "fa-gear" }
-            };
-
-            village.timers.push({
-                id: `manual_${Date.now()}`,
-                name,
-                icon: catMeta[cat].icon,
-                fromLvl: toLvl ? Math.max(1, toLvl - 1) : null,
-                toLvl: toLvl,
-                category: cat,
-                subLabel: catMeta[cat].label,
-                totalSeconds: discountedSec,
-                endTimeMs: Date.now() + discountedSec * 1000,
-                appliedBoostPct: boostPct,
-                helperAssigned: null,
-                preNotified: false,
-                doneNotified: false
-            });
-
-            saveAppState();
-            renderAll();
-            closeModal("modal-add-timer");
-            showToast("Mejora Añadida", `"${name}" iniciada (${formatDuration(discountedSec)}).`, "success");
-        }
-
-        // Modal Renombrar Aldea
-        function openRenameVillageModal() {
-            const village = getActiveVillage();
-            document.getElementById("rename-village-name").value = village.name;
-            document.getElementById("rename-village-tag").value = village.tag;
-            document.getElementById("modal-rename-village").classList.remove("hidden");
-        }
-
-        function saveRenameVillage() {
-            const village = getActiveVillage();
-            const newName = document.getElementById("rename-village-name").value.trim();
-            let newTag = document.getElementById("rename-village-tag").value.trim();
-            if (newName) village.name = newName;
-            if (newTag) {
-                if (!newTag.startsWith("#")) newTag = "#" + newTag.toUpperCase();
-                village.tag = newTag;
-            }
-            saveAppState();
-            renderAll();
-            closeModal("modal-rename-village");
-        }
-
-        // Modal Eliminar Aldea
-        function openDeleteVillageModal() {
-            if (appState.villages.length <= 1) return;
-            const village = getActiveVillage();
-            document.getElementById("delete-village-confirm-name").textContent = `${village.name} (${village.tag})`;
-            document.getElementById("modal-delete-village").classList.remove("hidden");
-        }
-
-        function confirmDeleteActiveVillage() {
-            if (appState.villages.length <= 1) return;
-            const removed = getActiveVillage();
-            appState.villages = appState.villages.filter(v => v.id !== removed.id);
-            appState.activeVillageId = appState.villages[0].id;
-            saveAppState();
-            renderAll();
-            closeModal("modal-delete-village");
-            showToast("Aldea Eliminada", `Se eliminó la pestaña "${removed.name}".`, "info");
-        }
-
-        function switchVillageTab(villageId) {
-            appState.activeVillageId = villageId;
-            saveAppState();
-            renderAll();
-        }
-
-        function setCategoryFilter(cat) {
-            activeCategoryFilter = cat;
-            renderAll();
+            closeModal("modal-json");
+            showToast("Aldea Restaurada", "Se cargaron los datos originales de #Q8Y9PQRP8.", "info");
         }
 
         // =====================================================================
-        // 10. RENDERIZADO COMPLETO DE LA INTERFAZ
+        // 9. EXPORTACIÓN DE ALARMA NATIVA A CALENDARIO (.ICS)
         // =====================================================================
-        function renderAll() {
+        function downloadCalendarAlarm(timerId) {
             const village = getActiveVillage();
             if (!village) return;
+            const timer = village.timers.find(t => t.id === timerId);
+            if (!timer) return;
 
-            renderVillageTabs();
-            renderActiveVillageHeader(village);
-            renderGoldPassPanel(village);
-            renderLeadTimePanel();
-            renderUpgradesAndKPIs(village);
-            renderHelpers(village);
+            const now = Date.now();
+            const leadMins = appState.alertSettings.leadMinutes || 0;
+            const preAlertMs = timer.endTimeMs - leadMins * 60000;
+
+            // Programa la alarma exactamente con los minutos de anticipación elegidos (si aún no ha pasado)
+            const alarmTimestampMs = (leadMins > 0 && preAlertMs > now + 15000) ? preAlertMs : timer.endTimeMs;
+            const endEventMs = alarmTimestampMs + 5 * 60000;
+
+            const toIcsUtc = (ms) => {
+                const d = new Date(ms);
+                const pad = (n) => String(n).padStart(2, "0");
+                return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+            };
+
+            const lvlText = timer.toLvl ? ` (Nvl ${timer.toLvl})` : "";
+            const summary = `CoC: ${timer.name}${lvlText} - ${village.name}`;
+            const finishFormatted = formatClockTime(timer.endTimeMs);
+            const leadNote = leadMins > 0 ? `Aviso ${leadMins} min antes. ` : "";
+            const description = `${leadNote}Mejora en ${village.name} (${village.tag || ""}). Finaliza: ${finishFormatted}.`;
+
+            const icsLines = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "PRODID:-//Notificador Mejoras CoC//ES",
+                "CALSCALE:GREGORIAN",
+                "BEGIN:VEVENT",
+                `UID:coc-${timer.id}-${now}@coctimer.local`,
+                `DTSTAMP:${toIcsUtc(now)}`,
+                `DTSTART:${toIcsUtc(alarmTimestampMs)}`,
+                `DTEND:${toIcsUtc(endEventMs)}`,
+                `SUMMARY:${summary}`,
+                `DESCRIPTION:${description}`,
+                "BEGIN:VALARM",
+                "ACTION:DISPLAY",
+                `DESCRIPTION:${summary}`,
+                "TRIGGER:-PT0M",
+                "END:VALARM",
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\r\n");
+
+            try {
+                const blob = new Blob([icsLines], { type: "text/calendar;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                const safeName = timer.name.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+                a.href = url;
+                a.download = `coc_${safeName}.ics`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+                showToast(
+                    "📅 Alarma Lista",
+                    "Abre el archivo descargado y guarda el evento en tu Calendario para que suene aunque cierres la app.",
+                    "success"
+                );
+            } catch (e) {
+                showToast("Error al exportar", "No se pudo generar el archivo de calendario.", "warning");
+            }
+        }
+
+        // =====================================================================
+        // 10. RENDERIZADO DE PESTAÑAS, TARJETAS, KPIs Y ASISTENTES
+        // =====================================================================
+        function setCategoryFilter(cat) {
+            activeCategoryFilter = cat;
+            document.querySelectorAll(".cat-filter-btn").forEach(btn => {
+                const isSelected = btn.getAttribute("data-cat") === cat;
+                btn.className = isSelected
+                    ? "cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap"
+                    : "cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-card text-slate-300 border border-coc-border transition cursor-pointer whitespace-nowrap";
+            });
+            renderUpgradesGrid();
         }
 
         function renderVillageTabs() {
@@ -1517,207 +1446,187 @@
 
             container.innerHTML = appState.villages.map(v => {
                 const isActive = v.id === appState.activeVillageId;
+                const completedCount = v.timers.filter(t => getRemainingSeconds(t) === 0).length;
                 const activeCount = v.timers.filter(t => getRemainingSeconds(t) > 0).length;
-                const hasAlertOrDone = v.timers.some(t => {
+                const hasPreAlert = v.timers.some(t => {
                     const rem = getRemainingSeconds(t);
-                    return rem === 0 || (leadSeconds > 0 && rem <= leadSeconds);
+                    return rem > 0 && leadSeconds > 0 && rem <= leadSeconds;
                 });
 
-                const tabStyle = isActive
-                    ? "bg-coc-gold text-slate-950 border-coc-gold shadow-md font-extrabold"
-                    : hasAlertOrDone
-                        ? "bg-emerald-950/70 text-emerald-200 border-emerald-500/60 hover:bg-emerald-900/60 font-semibold"
-                        : "bg-slate-900/90 text-slate-300 border-coc-border hover:border-slate-500 font-semibold";
+                // REGLA CRÍTICA VISUAL: Si hay al menos una mejora completada (00:00:00), parpadea intensamente en rojo
+                let tabClasses = "";
+                if (completedCount > 0) {
+                    tabClasses = isActive
+                        ? "village-tab-blink-red font-extrabold border-2 ring-2 ring-white/90"
+                        : "village-tab-blink-red font-extrabold border-2";
+                } else if (isActive) {
+                    tabClasses = "bg-coc-gold text-slate-950 border-coc-gold shadow-md font-extrabold";
+                } else if (hasPreAlert) {
+                    tabClasses = "bg-amber-950/80 text-amber-200 border-amber-500/70 hover:bg-amber-900/70 font-bold";
+                } else {
+                    tabClasses = "bg-slate-900/90 text-slate-300 border-coc-border hover:border-slate-500 font-semibold";
+                }
 
-                const badgeStyle = isActive
+                const countBadgeClasses = isActive && completedCount === 0
                     ? "bg-slate-950/20 text-slate-950"
-                    : hasAlertOrDone
-                        ? "bg-emerald-500 text-slate-950 font-extrabold"
-                        : "bg-slate-800 text-slate-300";
+                    : "bg-slate-950/50 text-white";
 
                 return `
-                    <button onclick="switchVillageTab('${v.id}')" class="px-3 py-1.5 rounded-xl border text-xs flex items-center gap-2 whitespace-nowrap shrink-0 transition cursor-pointer ${tabStyle}">
+                    <button onclick="switchVillageTab('${v.id}')" class="px-3 py-1.5 rounded-xl border text-xs flex items-center gap-2 whitespace-nowrap shrink-0 transition cursor-pointer ${tabClasses}">
+                        ${completedCount > 0 ? `
+                            <span class="relative flex h-2.5 w-2.5 shrink-0">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-200"></span>
+                            </span>
+                        ` : ""}
                         <span class="truncate max-w-[140px] sm:max-w-[190px]">${v.name}</span>
-                        <span class="px-1.5 py-0.5 rounded-md text-[10px] ${badgeStyle}">${activeCount}</span>
+                        ${completedCount > 0 ? `
+                            <span class="px-1.5 py-0.5 rounded-md text-[10px] bg-red-950/95 border border-red-200/80 text-white font-extrabold">
+                                ¡${completedCount} lista${completedCount > 1 ? "s" : ""}!
+                            </span>
+                        ` : ""}
+                        <span class="px-1.5 py-0.5 rounded-md text-[10px] ${countBadgeClasses}">${activeCount}</span>
                     </button>
                 `;
             }).join("");
         }
 
-        function renderActiveVillageHeader(village) {
-            document.getElementById("active-village-title").textContent = village.name;
-            document.getElementById("active-village-tag").textContent = village.tag || "#SIN-TAG";
+        function renderActiveVillageHeader() {
+            const v = getActiveVillage();
+            if (!v) return;
 
-            const activeCount = village.timers.filter(t => getRemainingSeconds(t) > 0).length;
-            const doneCount = village.timers.filter(t => getRemainingSeconds(t) === 0).length;
+            document.getElementById("active-village-title").textContent = v.name;
+            document.getElementById("active-village-tag").textContent = v.tag || "#SIN-TAG";
+
+            const activeCount = v.timers.filter(t => getRemainingSeconds(t) > 0).length;
+            const completedCount = v.timers.filter(t => getRemainingSeconds(t) === 0).length;
             document.getElementById("active-village-subtitle").textContent =
-                `${activeCount} en curso • ${doneCount} completada(s) • Pase: ${village.builderBoost}% Const. / ${village.researchBoost}% Inv.`;
+                `${activeCount} mejora(s) en curso • ${completedCount} completada(s)`;
 
             const delBtn = document.getElementById("btn-delete-village");
-            delBtn.classList.toggle("hidden", appState.villages.length <= 1);
-        }
-
-        function renderGoldPassPanel(village) {
-            const levels = [0, 10, 15, 20];
-
-            document.getElementById("builder-boost-pills").innerHTML = levels.map(pct => {
-                const selected = village.builderBoost === pct;
-                const cls = selected
-                    ? "bg-amber-400 text-slate-950 font-extrabold border-amber-300 shadow"
-                    : "bg-slate-950 text-slate-300 border-coc-border hover:border-amber-400/50 font-semibold";
-                return `
-                    <button onclick="setVillageBoost('builder', ${pct})" class="py-1.5 rounded-lg border text-xs transition cursor-pointer ${cls}">
-                        ${pct}%
-                    </button>
-                `;
-            }).join("");
-
-            document.getElementById("research-boost-pills").innerHTML = levels.map(pct => {
-                const selected = village.researchBoost === pct;
-                const cls = selected
-                    ? "bg-fuchsia-500 text-white font-extrabold border-fuchsia-300 shadow"
-                    : "bg-slate-950 text-slate-300 border-coc-border hover:border-fuchsia-400/50 font-semibold";
-                return `
-                    <button onclick="setVillageBoost('research', ${pct})" class="py-1.5 rounded-lg border text-xs transition cursor-pointer ${cls}">
-                        ${pct}%
-                    </button>
-                `;
-            }).join("");
-
-            document.getElementById("toggle-auto-recalc").checked = Boolean(village.autoRecalcOnBoostChange);
-        }
-
-        function renderLeadTimePanel() {
-            const presets = [
-                { mins: 0, label: "0 min (Al terminar)" },
-                { mins: 5, label: "5 min" },
-                { mins: 10, label: "10 min" },
-                { mins: 15, label: "15 min" },
-                { mins: 30, label: "30 min" },
-                { mins: 60, label: "60 min" }
-            ];
-
-            const currentMins = appState.alertSettings.leadMinutes;
-            document.getElementById("lead-time-chips").innerHTML = presets.map(p => {
-                const isSelected = currentMins === p.mins;
-                const cls = isSelected
-                    ? "bg-emerald-500 text-slate-950 font-extrabold border-emerald-300 shadow"
-                    : "bg-slate-900 text-slate-300 border-coc-border hover:border-emerald-400/50 font-semibold";
-                return `
-                    <button onclick="setLeadMinutes(${p.mins})" class="px-2.5 py-1.5 rounded-xl border text-xs transition cursor-pointer ${cls}">
-                        ${p.label}
-                    </button>
-                `;
-            }).join("");
-
-            const inputEl = document.getElementById("custom-lead-minutes");
-            if (document.activeElement !== inputEl) {
-                inputEl.value = currentMins;
-            }
-            document.getElementById("toggle-notify-zero").checked = Boolean(appState.alertSettings.notifyAtZero);
-
-            document.getElementById("active-alert-summary").textContent = currentMins > 0
-                ? `Avisando ${currentMins} min antes`
-                : "Avisando al terminar (00:00:00)";
-        }
-
-        function renderUpgradesAndKPIs(village) {
-            const sorted = [...village.timers].sort((a, b) => getRemainingSeconds(a) - getRemainingSeconds(b));
-            const leadMins = appState.alertSettings.leadMinutes || 0;
-            const leadSeconds = leadMins * 60;
-
-            // Contadores por categoría
-            document.getElementById("count-all").textContent = sorted.length;
-            document.getElementById("count-builder").textContent = sorted.filter(t => t.category === "builder").length;
-            document.getElementById("count-research").textContent = sorted.filter(t => t.category === "research" || t.category === "pet").length;
-            document.getElementById("count-bb").textContent = sorted.filter(t => t.category === "builder_base").length;
-
-            // Actualizar estilos de botones de filtro
-            document.querySelectorAll(".cat-filter-btn").forEach(btn => {
-                const active = btn.dataset.cat === activeCategoryFilter;
-                btn.className = active
-                    ? "cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-gold text-slate-950 transition cursor-pointer whitespace-nowrap"
-                    : "cat-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-coc-card text-slate-300 border border-coc-border transition cursor-pointer whitespace-nowrap";
-            });
-
-            // KPIs
-            const activeTimers = sorted.filter(t => getRemainingSeconds(t) > 0);
-            const nextTimer = activeTimers[0];
-            if (nextTimer) {
-                document.getElementById("kpi-next-timer").textContent = formatDuration(getRemainingSeconds(nextTimer));
-                document.getElementById("kpi-next-name").textContent = nextTimer.toLvl
-                    ? `${nextTimer.name} (Nvl ${nextTimer.toLvl})`
-                    : nextTimer.name;
+            if (appState.villages.length > 1) {
+                delBtn.classList.remove("hidden");
             } else {
-                document.getElementById("kpi-next-timer").textContent = "¡Todo Listo!";
+                delBtn.classList.add("hidden");
+            }
+        }
+
+        function renderKPIs() {
+            const v = getActiveVillage();
+            if (!v) return;
+
+            const activeTimers = v.timers
+                .map(t => ({ ...t, rem: getRemainingSeconds(t) }))
+                .filter(t => t.rem > 0)
+                .sort((a, b) => a.rem - b.rem);
+
+            const completedTimers = v.timers.filter(t => getRemainingSeconds(t) === 0);
+
+            if (completedTimers.length > 0) {
+                document.getElementById("kpi-next-timer").textContent = "¡COMPLETADA!";
+                document.getElementById("kpi-next-timer").className = "clash-title text-base sm:text-lg font-extrabold text-red-400 mt-0.5 animate-pulse";
+                document.getElementById("kpi-next-name").textContent = `${completedTimers[0].name} lista`;
+            } else if (activeTimers.length > 0) {
+                document.getElementById("kpi-next-timer").textContent = formatDuration(activeTimers[0].rem);
+                document.getElementById("kpi-next-timer").className = "clash-title text-base sm:text-lg font-extrabold text-coc-gold mt-0.5";
+                document.getElementById("kpi-next-name").textContent = activeTimers[0].name;
+            } else {
+                document.getElementById("kpi-next-timer").textContent = "Todo Libre";
+                document.getElementById("kpi-next-timer").className = "clash-title text-base sm:text-lg font-extrabold text-emerald-400 mt-0.5";
                 document.getElementById("kpi-next-name").textContent = "Sin mejoras pendientes";
             }
 
-            const homeBuilders = activeTimers.filter(t => t.category === "builder").length;
+            const mainBuilders = activeTimers.filter(t => t.category === "builder").length;
             const bbBuilders = activeTimers.filter(t => t.category === "builder_base").length;
-            document.getElementById("kpi-builders").textContent = `${homeBuilders + bbBuilders} Activos`;
-            document.getElementById("kpi-builders-sub").textContent = `${homeBuilders} Aldea • ${bbBuilders} Base Const.`;
+            document.getElementById("kpi-builders").textContent = `${mainBuilders + bbBuilders} Activos`;
+            document.getElementById("kpi-builders-sub").textContent = `${mainBuilders} Aldea • ${bbBuilders} Base Constructor`;
 
-            const resTimers = activeTimers.filter(t => t.category === "research" || t.category === "pet");
-            if (resTimers.length > 0) {
-                document.getElementById("kpi-research").textContent = `${resTimers.length} Activa(s)`;
-                document.getElementById("kpi-research-sub").textContent = resTimers[0].name;
+            const researchTimers = activeTimers.filter(t => t.category === "research" || t.category === "pet");
+            if (researchTimers.length > 0) {
+                document.getElementById("kpi-research").textContent = formatDuration(researchTimers[0].rem);
+                document.getElementById("kpi-research-sub").textContent = researchTimers[0].name;
             } else {
                 document.getElementById("kpi-research").textContent = "Libre";
-                document.getElementById("kpi-research-sub").textContent = "Sin investigación";
+                document.getElementById("kpi-research-sub").textContent = "Laboratorio disponible";
+            }
+        }
+
+        function renderUpgradesGrid() {
+            const v = getActiveVillage();
+            if (!v) return;
+
+            const allTimers = v.timers;
+            const bCount = allTimers.filter(t => t.category === "builder").length;
+            const rCount = allTimers.filter(t => t.category === "research" || t.category === "pet").length;
+            const bbCount = allTimers.filter(t => t.category === "builder_base").length;
+            const completedTotal = allTimers.filter(t => getRemainingSeconds(t) === 0).length;
+
+            document.getElementById("count-all").textContent = allTimers.length;
+            document.getElementById("count-builder").textContent = bCount;
+            document.getElementById("count-research").textContent = rCount;
+            document.getElementById("count-bb").textContent = bbCount;
+
+            const clearBtn = document.getElementById("btn-clear-completed");
+            if (completedTotal > 0) {
+                clearBtn.classList.remove("hidden");
+            } else {
+                clearBtn.classList.add("hidden");
             }
 
-            // Filtrar tarjetas
-            const filtered = sorted.filter(t => {
-                if (activeCategoryFilter === "all") return true;
-                if (activeCategoryFilter === "research") return t.category === "research" || t.category === "pet";
-                return t.category === activeCategoryFilter;
-            });
+            const filtered = allTimers
+                .filter(t => {
+                    if (activeCategoryFilter === "all") return true;
+                    if (activeCategoryFilter === "research") return t.category === "research" || t.category === "pet";
+                    return t.category === activeCategoryFilter;
+                })
+                .sort((a, b) => getRemainingSeconds(a) - getRemainingSeconds(b));
 
             const grid = document.getElementById("upgrades-grid");
             if (filtered.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full bg-coc-card border border-coc-border rounded-2xl p-8 text-center">
-                        <i class="fa-solid fa-mug-hot text-3xl text-slate-500 mb-2"></i>
-                        <p class="text-sm font-bold text-slate-300">No hay mejoras en esta categoría</p>
-                        <p class="text-xs text-slate-500 mt-1">Usa "+ Añadir Mejora Manual" o "Actualizar JSON" para agregar temporizadores.</p>
+                    <div class="col-span-full bg-coc-card border border-dashed border-coc-border rounded-2xl p-8 text-center space-y-2">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-900 text-slate-500 mx-auto flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-hammer"></i>
+                        </div>
+                        <p class="font-bold text-slate-300">No hay mejoras en esta categoría</p>
+                        <p class="text-xs text-slate-500">Usa "Actualizar JSON" o "+ Añadir Mejora Manual" para registrar tus constructores.</p>
                     </div>
                 `;
                 return;
             }
 
+            const leadMins = appState.alertSettings.leadMinutes || 0;
+            const leadSeconds = leadMins * 60;
+
             grid.innerHTML = filtered.map(timer => {
                 const rem = getRemainingSeconds(timer);
                 const isCompleted = rem === 0;
                 const isPreAlert = !isCompleted && leadSeconds > 0 && rem <= leadSeconds;
-
-                const total = Math.max(1, timer.totalSeconds || rem);
+                const total = Math.max(timer.totalSeconds || rem || 1, 1);
                 const pct = isCompleted ? 100 : Math.min(99, Math.max(4, Math.round(((total - rem) / total) * 100)));
 
-                // Colores por categoría
-                let badgeCls = "bg-amber-500/15 text-amber-300 border-amber-500/30";
-                let iconCls = "bg-amber-500/20 text-amber-400 border-amber-500/30";
-                let barCls = "from-amber-400 to-amber-500";
+                let badgeCls = "bg-amber-500/15 text-amber-300 border-amber-400/30";
+                let iconCls = "bg-amber-500/20 text-coc-gold border-amber-400/40";
+                let barCls = "from-amber-400 to-amber-600";
 
                 if (timer.category === "research" || timer.category === "pet") {
-                    badgeCls = "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30";
-                    iconCls = "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30";
-                    barCls = "from-fuchsia-500 to-purple-500";
+                    badgeCls = "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-400/30";
+                    iconCls = "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-400/40";
+                    barCls = "from-fuchsia-400 to-purple-600";
                 } else if (timer.category === "builder_base") {
-                    badgeCls = "bg-sky-500/15 text-sky-300 border-sky-500/30";
-                    iconCls = "bg-sky-500/20 text-sky-400 border-sky-500/30";
-                    barCls = "from-sky-400 to-blue-500";
+                    badgeCls = "bg-sky-500/15 text-sky-300 border-sky-400/30";
+                    iconCls = "bg-sky-500/20 text-sky-300 border-sky-400/40";
+                    barCls = "from-sky-400 to-blue-600";
                 }
 
                 let cardBorder = "border-coc-border";
                 if (isCompleted) {
-                    cardBorder = "border-emerald-400 glow-completed";
-                    barCls = "from-emerald-400 to-emerald-500";
+                    cardBorder = "border-red-500 card-completed-red";
+                    barCls = "from-red-500 to-rose-600";
                 } else if (isPreAlert) {
-                    cardBorder = "border-amber-400 glow-prealert";
+                    cardBorder = "border-amber-400 card-prealert-amber";
                 }
 
-                // Horarios exactos de pre-aviso y fin
                 const preAlertTimeMs = timer.endTimeMs - leadSeconds * 1000;
                 const preAlertText = leadMins > 0
                     ? (isPreAlert || isCompleted ? "Aviso ya enviado" : `Aviso: ${formatClockTime(preAlertTimeMs)}`)
@@ -1727,28 +1636,28 @@
                 return `
                     <div class="bg-coc-card hover:bg-coc-cardHover border ${cardBorder} rounded-2xl p-4 flex flex-col justify-between transition shadow-lg">
                         <div>
-                            <!-- Fila Superior: Categoría, Pase aplicado y Eliminar -->
+                            <!-- Fila Superior: Categoría y Acciones Rápidas -->
                             <div class="flex items-center justify-between gap-2 mb-2.5">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeCls}">
-                                        ${timer.subLabel}
-                                    </span>
-                                    ${timer.appliedBoostPct > 0 ? `
-                                        <span class="px-1.5 py-0.5 rounded-md bg-amber-400/15 border border-amber-400/40 text-coc-gold text-[10px] font-bold">
-                                            -${timer.appliedBoostPct}% Pase
-                                        </span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeCls}">
+                                    ${timer.subLabel}
+                                </span>
+                                <div class="flex items-center gap-1">
+                                    ${!isCompleted ? `
+                                        <button onclick="completeTimerNow('${timer.id}')" title="Marcar como completada ahora" class="text-slate-500 hover:text-emerald-400 text-xs p-1 transition cursor-pointer">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
                                     ` : ""}
+                                    <button onclick="deleteTimer('${timer.id}')" title="Descartar / Quitar" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
                                 </div>
-                                <button onclick="deleteTimer('${timer.id}')" title="Quitar temporizador" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
                             </div>
 
-                            <!-- Banner de Estado Especial (Por terminar / Completado) -->
+                            <!-- Banner de Alerta Visual -->
                             ${isCompleted ? `
-                                <div class="mb-2.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-[11px] font-extrabold flex items-center gap-1.5">
-                                    <i class="fa-solid fa-circle-check"></i>
-                                    <span>¡Completado! Constructor/Lab libre</span>
+                                <div class="mb-2.5 px-2.5 py-1.5 rounded-lg bg-red-600/30 border border-red-400/80 text-red-200 text-[11px] font-extrabold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-bell text-red-400 animate-bounce"></i>
+                                    <span>¡MEJORA COMPLETADA! Lista para recoger</span>
                                 </div>
                             ` : isPreAlert ? `
                                 <div class="mb-2.5 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 text-[11px] font-extrabold flex items-center gap-1.5">
@@ -1770,7 +1679,7 @@
                                             <i class="fa-solid fa-arrow-right text-[10px] text-coc-gold"></i>
                                             <span class="text-coc-gold">Nvl ${timer.toLvl}</span>
                                         </div>
-                                    ` : `<p class="text-xs text-slate-400 mt-0.5">Temporizador personalizado</p>`}
+                                    ` : `<p class="text-xs text-slate-400 mt-0.5">Temporizador manual</p>`}
                                     ${timer.helperAssigned ? `
                                         <p class="text-[11px] text-indigo-300 font-semibold mt-1 flex items-center gap-1 truncate">
                                             <i class="fa-solid fa-user-astronaut text-[10px]"></i>
@@ -1781,11 +1690,11 @@
                             </div>
                         </div>
 
-                        <!-- Cuenta atrás, Horas exactas y Barra de progreso -->
+                        <!-- Cuenta Atrás, Horarios y Botón Calendario -->
                         <div class="mt-3.5 pt-3 border-t border-coc-border/60 space-y-2">
                             <div class="flex items-baseline justify-between gap-2">
-                                <span class="clash-title text-lg sm:text-xl ${isCompleted ? "text-emerald-400" : isPreAlert ? "text-amber-300" : "text-white"}">
-                                    ${formatDuration(rem)}
+                                <span class="clash-title text-base sm:text-lg font-extrabold ${isCompleted ? "text-red-400" : isPreAlert ? "text-amber-300" : "text-white"}">
+                                    ${isCompleted ? "00h 00m 00s" : formatDuration(rem)}
                                 </span>
                                 <span class="text-[11px] font-semibold text-slate-300">${finishText}</span>
                             </div>
@@ -1796,55 +1705,115 @@
 
                             <div class="flex items-center justify-between text-[11px] text-slate-400">
                                 <span class="flex items-center gap-1">
-                                    <i class="fa-regular fa-bell text-emerald-400"></i>
+                                    <i class="fa-regular fa-bell text-coc-gold"></i>
                                     <span>${preAlertText}</span>
                                 </span>
                                 <span>${pct}%</span>
                             </div>
+
+                            <!-- Botón Compacto 📅 Calendario o Descartar Completada -->
+                            <div class="pt-1">
+                                ${isCompleted ? `
+                                    <button onclick="deleteTimer('${timer.id}')" class="btn-coc w-full py-2 px-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer">
+                                        <i class="fa-solid fa-check-double"></i>
+                                        <span>Recoger / Descartar</span>
+                                    </button>
+                                ` : `
+                                    <button onclick="downloadCalendarAlarm('${timer.id}')" class="w-full py-1.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-coc-border hover:border-coc-gold/70 text-slate-200 font-semibold text-[11px] flex items-center justify-center gap-1.5 transition cursor-pointer">
+                                        <span>📅 Calendario</span>
+                                    </button>
+                                `}
+                            </div>
                         </div>
                     </div>
                 `;
             }).join("");
         }
 
-        function renderHelpers(village) {
-            const container = document.getElementById("helpers-grid");
-            if (!village.helpers || village.helpers.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 col-span-full">No hay asistentes registrados en esta aldea.</p>`;
+        function renderHelpersGrid() {
+            const v = getActiveVillage();
+            const grid = document.getElementById("helpers-grid");
+            if (!v || !Array.isArray(v.helpers) || v.helpers.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-xs text-slate-500">Sin datos de asistentes en esta aldea.</p>`;
                 return;
             }
 
             const now = Date.now();
-            container.innerHTML = village.helpers.map(h => {
-                const cdRem = Math.max(0, Math.ceil(((h.cooldownEndMs || 0) - now) / 1000));
+            grid.innerHTML = v.helpers.map(h => {
+                const meta = COC_DICT[h.data] || { name: `Asistente (${h.data})`, icon: "fa-user-gear", role: "Asistente" };
+                const cdRem = h.cooldownEndMs > now ? Math.floor((h.cooldownEndMs - now) / 1000) : 0;
                 const isReady = cdRem === 0;
 
                 return `
-                    <div class="bg-slate-900/80 border border-coc-border rounded-xl p-3 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shrink-0">
-                            <i class="fa-solid ${h.icon}"></i>
+                    <div class="bg-slate-900/90 border border-coc-border rounded-xl p-3 flex items-center justify-between gap-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-9 h-9 rounded-lg ${isReady ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/40" : "bg-indigo-500/20 text-indigo-300 border-indigo-400/40"} border flex items-center justify-center shrink-0">
+                                <i class="fa-solid ${meta.icon}"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-white truncate">${meta.name}</p>
+                                <p class="text-[11px] text-coc-gold font-semibold">Nivel ${h.lvl}</p>
+                            </div>
                         </div>
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center justify-between gap-1">
-                                <p class="text-xs font-bold text-white truncate">${h.name}</p>
-                                <span class="px-1.5 py-0.5 rounded bg-slate-800 text-coc-gold text-[10px] font-bold">Nvl ${h.lvl}</span>
-                            </div>
-                            <p class="text-[11px] text-slate-400 truncate">${h.role}</p>
-                            <div class="mt-1">
-                                ${isReady
-                                    ? `<span class="text-[11px] font-bold text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i>Disponible ahora</span>`
-                                    : `<span class="text-[11px] font-semibold text-amber-300"><i class="fa-solid fa-hourglass-half mr-1"></i>Listo en ${formatDuration(cdRem)}</span>`
-                                }
-                            </div>
+                        <div class="text-right shrink-0">
+                            ${isReady
+                                ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-bold">Disponible</span>`
+                                : `<span class="text-[11px] font-mono font-bold text-slate-300">${formatDuration(cdRem)}</span>`
+                            }
                         </div>
                     </div>
                 `;
             }).join("");
         }
 
+        function renderAll() {
+            renderVillageTabs();
+            renderActiveVillageHeader();
+            renderAlertSettingsUI();
+            renderKPIs();
+            renderUpgradesGrid();
+            renderHelpersGrid();
+        }
+
         // =====================================================================
-        // 11. SISTEMA DE NOTIFICACIONES PUSH Y SONIDO WEB AUDIO API
+        // 11. SISTEMA DE NOTIFICACIONES PUSH (SERVICE WORKER) Y SONIDO WEB AUDIO
         // =====================================================================
+        function sendSystemNotification(title, body, tag = "coc-timer-alert") {
+            if (!("Notification" in window) || Notification.permission !== "granted") {
+                return;
+            }
+
+            const options = {
+                body,
+                icon: "./icon.svg",
+                badge: "./icon.svg",
+                vibrate: [300, 100, 300, 100, 400],
+                requireInteraction: true,
+                renotify: true,
+                tag
+            };
+
+            if (swRegistration && typeof swRegistration.showNotification === "function") {
+                swRegistration.showNotification(title, options).catch(() => {
+                    try { new Notification(title, options); } catch (e) {}
+                });
+            } else if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.ready
+                    .then(reg => {
+                        swRegistration = reg;
+                        if (reg && typeof reg.showNotification === "function") {
+                            return reg.showNotification(title, options);
+                        }
+                        new Notification(title, options);
+                    })
+                    .catch(() => {
+                        try { new Notification(title, options); } catch (e) {}
+                    });
+            } else {
+                try { new Notification(title, options); } catch (e) {}
+            }
+        }
+
         function updateNotificationButtonUI() {
             const btnText = document.getElementById("notify-btn-text");
             if (!("Notification" in window)) {
@@ -1869,12 +1838,12 @@
                 updateNotificationButtonUI();
                 if (perm === "granted") {
                     playClashChime();
-                    showToast("¡Alertas Activadas!", "Recibirás notificaciones sonoras y visuales según tu anticipación.", "success");
-                    try {
-                        new Notification("Notificador CoC Activado", {
-                            body: `Te avisaremos ${appState.alertSettings.leadMinutes} min antes de que terminen tus mejoras.`
-                        });
-                    } catch (e) {}
+                    showToast("¡Alertas Activadas!", "Recibirás notificaciones del sistema según tu anticipación.", "success");
+                    sendSystemNotification(
+                        "Notificador CoC Activado",
+                        `Te avisaremos ${appState.alertSettings.leadMinutes} min antes de que terminen tus mejoras.`,
+                        "coc-welcome"
+                    );
                 } else {
                     showToast("Permiso denegado", "Activa las notificaciones en los ajustes de tu navegador.", "warning");
                 }
@@ -1883,97 +1852,135 @@
 
         function fireTimerNotification(village, timer, stage, remainingSec) {
             playClashChime();
-            const minsLeft = Math.ceil(remainingSec / 60);
+            const minsLeft = Math.max(1, Math.ceil(remainingSec / 60));
             const title = stage === "prealert"
                 ? `⏳ ¡Faltan ${minsLeft} min! (${village.name})`
-                : `✅ ¡Mejora Completada! (${village.name})`;
+                : `🔴 ¡Mejora Completada! (${village.name})`;
 
             const body = stage === "prealert"
                 ? `${timer.name}${timer.toLvl ? ` (Nvl ${timer.toLvl})` : ""} terminará en ${minsLeft} minuto(s).`
                 : `${timer.name}${timer.toLvl ? ` alcanzó el Nivel ${timer.toLvl}` : " ha finalizado"}. ¡Constructor libre!`;
 
             showToast(title, body, stage === "prealert" ? "warning" : "success");
-
-            if ("Notification" in window && Notification.permission === "granted") {
-                try {
-                    new Notification(title, { body });
-                } catch (e) {}
-            }
+            sendSystemNotification(title, body, `coc-${timer.id}-${stage}`);
         }
 
         function testNotification() {
             playClashChime();
             const mins = appState.alertSettings.leadMinutes;
-            showToast(
-                "🔔 Prueba de Alerta CoC",
-                mins > 0
-                    ? `Así sonará tu aviso cuando falten ${mins} minutos para terminar una mejora.`
-                    : "Así sonará tu aviso al completarse una mejora.",
-                "success"
-            );
+            const body = mins > 0
+                ? `Así llegará tu notificación flotante cuando falten ${mins} minutos para terminar una mejora.`
+                : "Así llegará tu notificación flotante al completarse una mejora.";
 
-            if ("Notification" in window && Notification.permission === "granted") {
-                try {
-                    new Notification("Notificador CoC - Prueba", {
-                        body: "¡Alerta funcionando correctamente en tu dispositivo!"
-                    });
-                } catch (e) {}
-            }
+            showToast("🔔 Prueba de Alerta CoC", body, "success");
+            sendSystemNotification("Notificador CoC - Prueba", body, "coc-test-alert");
         }
 
         function playClashChime() {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
                 const ctx = new AudioCtx();
-                const notes = [523.25, 659.25, 783.99, 1046.50]; // Acorde Do Mayor ascendente
+                const notes = [523.25, 659.25, 783.99, 1046.5];
                 notes.forEach((freq, i) => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = "triangle";
-                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
-
-                    gain.gain.setValueAtTime(0.001, ctx.currentTime + i * 0.1);
-                    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + i * 0.1 + 0.03);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.42);
-
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.11);
+                    gain.gain.setValueAtTime(0.001, ctx.currentTime + i * 0.11);
+                    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + i * 0.11 + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.11 + 0.35);
                     osc.connect(gain);
                     gain.connect(ctx.destination);
-                    osc.start(ctx.currentTime + i * 0.1);
-                    osc.stop(ctx.currentTime + i * 0.1 + 0.45);
+                    osc.start(ctx.currentTime + i * 0.11);
+                    osc.stop(ctx.currentTime + i * 0.11 + 0.36);
                 });
             } catch (e) {}
         }
 
         function showToast(title, message, type = "info") {
             const container = document.getElementById("toast-container");
-            const el = document.createElement("div");
-
-            const styles = {
-                success: { border: "border-emerald-400", icon: "fa-circle-check text-emerald-400" },
-                warning: { border: "border-amber-400", icon: "fa-bell text-amber-400" },
-                info: { border: "border-sky-400", icon: "fa-circle-info text-sky-400" }
+            const colors = {
+                success: "border-emerald-400 bg-slate-900/95 text-emerald-200",
+                warning: "border-amber-400 bg-slate-900/95 text-amber-200",
+                info: "border-sky-400 bg-slate-900/95 text-sky-200"
             };
-            const st = styles[type] || styles.info;
+            const icons = {
+                success: "fa-circle-check text-emerald-400",
+                warning: "fa-bell text-amber-400",
+                info: "fa-circle-info text-sky-400"
+            };
 
-            el.className = `pointer-events-auto border-l-4 ${st.border} bg-slate-900/95 rounded-xl p-3.5 shadow-2xl backdrop-blur-md flex items-start gap-3 transition-all duration-300`;
-            el.innerHTML = `
-                <i class="fa-solid ${st.icon} text-base mt-0.5"></i>
+            const toast = document.createElement("div");
+            toast.className = `pointer-events-auto border-l-4 ${colors[type] || colors.info} border border-coc-border rounded-xl p-3.5 shadow-2xl flex items-start gap-3 transition-all duration-300`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icons[type] || icons.info} text-base mt-0.5"></i>
                 <div class="flex-1 min-w-0">
                     <p class="font-bold text-xs text-white">${title}</p>
-                    <p class="text-[11px] text-slate-300 mt-0.5 leading-snug">${message}</p>
+                    <p class="text-[11px] text-slate-300 mt-0.5">${message}</p>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-white text-xs cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
             `;
-
-            container.appendChild(el);
+            container.appendChild(toast);
             setTimeout(() => {
-                el.style.opacity = "0";
-                el.style.transform = "translateX(16px)";
-                setTimeout(() => el.remove(), 300);
-            }, 5000);
+                toast.style.opacity = "0";
+                toast.style.transform = "translateX(16px)";
+                setTimeout(() => toast.remove(), 300);
+            }, 4800);
         }
+
+        // =====================================================================
+        // 12. MODALES Y BUCLE PRINCIPAL EN TIEMPO REAL
+        // =====================================================================
+        function openModal(id) {
+            document.getElementById(id).classList.remove("hidden");
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add("hidden");
+        }
+
+        function tickEngine() {
+            const leadSeconds = (appState.alertSettings.leadMinutes || 0) * 60;
+            const notifyAtZero = appState.alertSettings.notifyAtZero;
+            let stateDirty = false;
+
+            appState.villages.forEach(village => {
+                village.timers.forEach(timer => {
+                    const rem = getRemainingSeconds(timer);
+
+                    if (rem > 0 && leadSeconds > 0 && rem <= leadSeconds && !timer.preNotified) {
+                        timer.preNotified = true;
+                        stateDirty = true;
+                        fireTimerNotification(village, timer, "prealert", rem);
+                    }
+
+                    if (rem === 0 && !timer.doneNotified) {
+                        timer.doneNotified = true;
+                        stateDirty = true;
+                        if (notifyAtZero || leadSeconds === 0) {
+                            fireTimerNotification(village, timer, "done", 0);
+                        }
+                    }
+                });
+            });
+
+            if (stateDirty) {
+                saveAppState();
+            }
+
+            renderVillageTabs();
+            renderActiveVillageHeader();
+            renderKPIs();
+            renderUpgradesGrid();
+            renderHelpersGrid();
+        }
+
+        window.addEventListener("load", () => {
+            loadAppState();
+            updateNotificationButtonUI();
+            renderAll();
+            setInterval(tickEngine, 1000);
+        });
     </script>
 </body>
 </html>
